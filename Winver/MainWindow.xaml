@@ -49,6 +49,6 @@
         </TextBlock>
         <Label Name="label7" Content="User" Foreground="White" HorizontalAlignment="Left" Margin="38,346,0,0" VerticalAlignment="Top" FontSize="12.1" FontFamily="Segoe UI" />
         <Label Name="label8" Content="Workgroup" Foreground="White" HorizontalAlignment="Left" Margin="38,362,0,0" VerticalAlignment="Top" FontSize="12.1" FontFamily="Segoe UI" />
-        <wpfui:Button Appearance="Secondary" Cursor="Arrow" Content="OK" FontSize="12.1" HorizontalAlignment="Right" Margin="0,0,14,15"  VerticalAlignment="Bottom" x:Name="but" Width="78" Click="Button_Click"></wpfui:Button>
+        <wpfui:Button FontWeight="Normal" Appearance="Secondary" Cursor="Arrow" Content="OK" FontSize="12.1" HorizontalAlignment="Right" Margin="0,0,14,15"  VerticalAlignment="Bottom" x:Name="but" Width="78" Click="Button_Click"></wpfui:Button>
     </Grid>
 </Window>
