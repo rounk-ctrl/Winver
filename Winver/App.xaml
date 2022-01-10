@@ -10,7 +10,8 @@
                     <ui:ThemeResources />
                     <ui:XamlControlsResources />
                     <!-- Other merged dictionaries here -->
-                </ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/WPFUI;component/Styles/WPFUI.xaml" />
+            </ResourceDictionary.MergedDictionaries>
             <!-- Other app resources here -->
             </ResourceDictionary>
     </Application.Resources>

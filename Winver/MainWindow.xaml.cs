@@ -35,7 +35,8 @@ namespace Winver
         {
             DWMWA_USE_IMMERSIVE_DARK_MODE_20h1 = 20,
             DWMWA_USE_IMMERSIVE_DARK_MODE_19h1 = 19,
-            DWMWA_MICA_EFFECT = 1029
+            DWMWA_MICA_EFFECT = 1029,
+            DWMWA_SYSTEMBACKDROP_TYPE = 38
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -62,6 +63,7 @@ namespace Winver
         {
             int trueValue = 0x01;
             int falseValue = 0x00;
+            int mica = 2;
             RegistryKey CurrentVersionKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
             // Set dark mode before applying the material, otherwise you'll get an ugly flash when displaying the window.
             if (darkThemeEnabled)
@@ -87,8 +89,14 @@ namespace Winver
                     DwmSetWindowAttribute(source.Handle, DwmWindowAttribute.DWMWA_USE_IMMERSIVE_DARK_MODE_20h1, ref falseValue, Marshal.SizeOf(typeof(int)));
                 }
             }
-
-            DwmSetWindowAttribute(source.Handle, DwmWindowAttribute.DWMWA_MICA_EFFECT, ref trueValue, Marshal.SizeOf(typeof(int)));
+            if (Convert.ToInt16(CurrentVersionKey.GetValue("CurrentBuild").ToString()) >= 22523)
+            {
+                DwmSetWindowAttribute(source.Handle, DwmWindowAttribute.DWMWA_SYSTEMBACKDROP_TYPE, ref mica, Marshal.SizeOf(typeof(int)));
+            }
+            else
+            {
+                DwmSetWindowAttribute(source.Handle, DwmWindowAttribute.DWMWA_MICA_EFFECT, ref trueValue, Marshal.SizeOf(typeof(int)));
+            }
             CurrentVersionKey.Close();
         }
 
@@ -131,9 +139,16 @@ namespace Winver
         {
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
             object o = key.GetValue("AppsUseLightTheme");
+            Uri light = new Uri("pack://application:,,,/WPFUI;component/Styles/Theme/Light.xaml", UriKind.RelativeOrAbsolute);
+            Uri dark = new Uri("pack://application:,,,/WPFUI;component/Styles/Theme/Dark.xaml", UriKind.RelativeOrAbsolute);
+
             int registryValue = (int)o;
             if (registryValue == 0)
             {
+                Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary()
+                {
+                    Source = dark
+                });
                 label1.Foreground = new SolidColorBrush(Colors.White);
                 label2.Foreground = new SolidColorBrush(Colors.White);
                 label3.Foreground = new SolidColorBrush(Colors.White);
@@ -145,6 +160,10 @@ namespace Winver
             }
             else
             {
+                Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary()
+                {
+                    Source = light
+                });
                 label1.Foreground = new SolidColorBrush(Colors.Black);
                 label2.Foreground = new SolidColorBrush(Colors.Black);
                 label3.Foreground = new SolidColorBrush(Colors.Black);
