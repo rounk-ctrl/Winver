@@ -7,7 +7,6 @@
         mc:Ignorable="d"
         ResizeMode="NoResize"
         TextOptions.TextFormattingMode="Display"
-        RenderOptions.ClearTypeHint="Enabled"
         TextOptions.TextRenderingMode="ClearType"
         Background="Transparent"
         Loaded="Window_Loaded"
@@ -22,8 +21,8 @@
     </WindowChrome.WindowChrome>
     <Grid>
         <Label Name="label2" Content="Microsoft Software Licence Terms" Foreground="White" HorizontalAlignment="Left" Margin="14,9,0,0" VerticalAlignment="Top" FontSize="12.1"/>
-        <RichTextBox  IsReadOnly="True" VerticalScrollBarVisibility="Auto" BorderThickness="0" BorderBrush="Transparent" Background="Transparent" Foreground="White" Margin="0,43,0,0" Name="RichTextBox1" HorizontalAlignment="Center" VerticalAlignment="Top" Width="738" Height="333"  />
-        <wpfui:Button FontWeight="Normal" Appearance="Secondary" Cursor="Arrow" Content="OK" HorizontalAlignment="Right" Margin="0,0,13,15" FontSize="12.1" VerticalAlignment="Bottom" Click="Button_Click" Height="32" Width="78"/>
+        <RichTextBox  IsReadOnlyCaretVisible="True" VerticalScrollBarVisibility="Auto" BorderThickness="0" BorderBrush="Transparent" Background="Transparent" Foreground="White" Margin="0,43,0,0" Name="RichTextBox1" HorizontalAlignment="Center" VerticalAlignment="Top" Width="738" Height="333"  />
+        <wpfui:Button KeyDown="Button_KeyDown" FontWeight="Normal" Appearance="Secondary" Cursor="Arrow" Content="OK" HorizontalAlignment="Right" Margin="0,0,13,15" FontSize="12.1" VerticalAlignment="Bottom" Click="Button_Click" Height="32" Width="78"/>
 
     </Grid>
 </Window>

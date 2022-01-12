@@ -10,7 +10,6 @@
         Loaded="Window_Loaded"
         KeyDown="Window_KeyDown"
         TextOptions.TextFormattingMode="Display"
-        RenderOptions.ClearTypeHint="Enabled"
         TextOptions.TextRenderingMode="ClearType"
         Title="About Windows" Height="432" Width="458" ResizeMode="NoResize">
     <Window.Resources>

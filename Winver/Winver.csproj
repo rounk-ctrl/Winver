@@ -178,7 +178,7 @@
       <Version>0.9.4</Version>
     </PackageReference>
     <PackageReference Include="WPF-UI">
-      <Version>1.2.1</Version>
+      <Version>1.2.2-prerelease116</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

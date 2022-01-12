@@ -125,7 +125,14 @@ namespace Winver
 
         private void Window_ContentRendered(object sender, EventArgs e)
         {
-            ApplyMica((HwndSource)sender);
+            try
+            {
+                ApplyMica((HwndSource)sender);
+            }
+            catch
+            {
+
+            }
             loadstuff();
         }
 
