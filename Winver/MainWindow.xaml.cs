@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Linq;
-using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
-using System.Management;
 using Microsoft.Win32;
 using System.Windows.Media.Imaging;
-using System.Security;
-using System.Drawing;
-using System.Reflection;
-using System.Drawing.Imaging;
+using System.Windows.Input;
+using static Winver.MicaHandler;
+using System.Runtime.InteropServices;
 
 namespace Winver
 {
@@ -19,105 +15,11 @@ namespace Winver
     /// </summary>
     public partial class MainWindow : Window
     {
-        [SecurityCritical]
-        [DllImport("ntdll.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        internal static extern int RtlGetVersion(ref OSVERSIONINFOEX versionInfo);
+        private string caption;
 
-        [DllImport("dwmapi.dll")]
-        public static extern int DwmSetWindowAttribute(IntPtr hwnd, DwmWindowAttribute dwAttribute, ref int pvAttribute, int cbAttribute);
-
-        [DllImport("gdi32.dll", EntryPoint = "DeleteObject")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool DeleteObject([In] IntPtr hObject);
-
-        [Flags]
-        public enum DwmWindowAttribute : uint
-        {
-            DWMWA_USE_IMMERSIVE_DARK_MODE_20h1 = 20,
-            DWMWA_USE_IMMERSIVE_DARK_MODE_19h1 = 19,
-            DWMWA_MICA_EFFECT = 1029,
-            DWMWA_SYSTEMBACKDROP_TYPE = 38
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        internal struct OSVERSIONINFOEX
-        {
-            // The OSVersionInfoSize field must be set to Marshal.SizeOf(typeof(OSVERSIONINFOEX))
-            internal int OSVersionInfoSize;
-            internal int MajorVersion;
-            internal int MinorVersion;
-            internal int BuildNumber;
-            internal int PlatformId;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
-            internal string CSDVersion;
-            internal ushort ServicePackMajor;
-            internal ushort ServicePackMinor;
-            internal short SuiteMask;
-            internal byte ProductType;
-            internal byte Reserved;
-        }
-
-        string caption;
-
-        public static void EnableMica(HwndSource source, bool darkThemeEnabled)
-        {
-            int trueValue = 0x01;
-            int falseValue = 0x00;
-            int mica = 2;
-            RegistryKey CurrentVersionKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
-            // Set dark mode before applying the material, otherwise you'll get an ugly flash when displaying the window.
-            if (darkThemeEnabled)
-            {
-                if (Convert.ToInt16(CurrentVersionKey.GetValue("CurrentBuild").ToString()) < 19041)
-                {
-                    DwmSetWindowAttribute(source.Handle, DwmWindowAttribute.DWMWA_USE_IMMERSIVE_DARK_MODE_19h1, ref trueValue, Marshal.SizeOf(typeof(int)));
-                }
-                else
-                {
-                    DwmSetWindowAttribute(source.Handle, DwmWindowAttribute.DWMWA_USE_IMMERSIVE_DARK_MODE_20h1, ref trueValue, Marshal.SizeOf(typeof(int)));
-                }
-            }
-
-            else
-            {
-                if (Convert.ToInt16(CurrentVersionKey.GetValue("CurrentBuild").ToString()) < 19041)
-                {
-                    DwmSetWindowAttribute(source.Handle, DwmWindowAttribute.DWMWA_USE_IMMERSIVE_DARK_MODE_19h1, ref falseValue, Marshal.SizeOf(typeof(int)));
-                }
-                else
-                {
-                    DwmSetWindowAttribute(source.Handle, DwmWindowAttribute.DWMWA_USE_IMMERSIVE_DARK_MODE_20h1, ref falseValue, Marshal.SizeOf(typeof(int)));
-                }
-            }
-            if (Convert.ToInt16(CurrentVersionKey.GetValue("CurrentBuild").ToString()) >= 22523)
-            {
-                DwmSetWindowAttribute(source.Handle, DwmWindowAttribute.DWMWA_SYSTEMBACKDROP_TYPE, ref mica, Marshal.SizeOf(typeof(int)));
-            }
-            else
-            {
-                DwmSetWindowAttribute(source.Handle, DwmWindowAttribute.DWMWA_MICA_EFFECT, ref trueValue, Marshal.SizeOf(typeof(int)));
-            }
-            CurrentVersionKey.Close();
-        }
-
-        public static void ApplyMica(HwndSource hwnd)
-        {
-            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
-            object o = key.GetValue("AppsUseLightTheme");
-            int registryValue = (int)o;
-            bool darkThemeEnabled;
-            if (registryValue == 0)
-            {
-                darkThemeEnabled = true;
-            }
-            else
-            {
-                darkThemeEnabled = false;
-            }
-            EnableMica(hwnd, darkThemeEnabled);
-            key.Close();
-        }
-
+        [DllImport("winbrand.dll", CharSet = CharSet.Unicode)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+        static extern string BrandingFormatString(string format);
         public MainWindow()
         {
             InitializeComponent();
@@ -125,15 +27,8 @@ namespace Winver
 
         private void Window_ContentRendered(object sender, EventArgs e)
         {
-            try
-            {
-                ApplyMica((HwndSource)sender);
-            }
-            catch
-            {
-
-            }
-            loadstuff();
+            ApplyMica((HwndSource)sender);
+            Loadstuff();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -142,7 +37,7 @@ namespace Winver
             presentationSource.ContentRendered += Window_ContentRendered;
         }
 
-        public void loadstuff()
+        public void Loadstuff()
         {
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
             object o = key.GetValue("AppsUseLightTheme");
@@ -181,6 +76,8 @@ namespace Winver
                 label8.Foreground = new SolidColorBrush(Colors.Black);
             }
             hyper.Foreground = SystemParameters.WindowGlassBrush;
+            RenderOptions.SetBitmapScalingMode(hero, BitmapScalingMode.LowQuality);
+            hero.Source = new BitmapImage(new Uri("pack://application:,,,/final.png"));
             RegistryKey CurrentVersionKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
             string version = (string)CurrentVersionKey.GetValue("DisplayVersion");
             if (version == "")
@@ -194,14 +91,10 @@ namespace Winver
             string UBR = ((int)CurrentVersionKey.GetValue("UBR")).ToString();
             string Build = (string)CurrentVersionKey.GetValue("CurrentBuild");
             label3.Content = "Version " + version + " (OS Build " + Build + "." + UBR + ")";
-            ManagementObject wmi = new ManagementObjectSearcher("select * from Win32_OperatingSystem").Get().Cast<ManagementObject>().First();
-            caption = ((string)wmi["Caption"]).Trim().Replace("Microsoft ", "");
-            hero.Source = new BitmapImage(new Uri("pack://application:,,,/final.png"));
-            Text.Text = "The " + caption + " operating system and its user interface are protected by trademark and other pending or existing intellectual property rights in the United States and other countries/regions.";
+            Text.Text = BrandingFormatString("The %WINDOWS_LONG% operating system and its user interface are protected by trademark and other pending or existing intellectual property rights in the United States and other countries/regions.");
             label7.Content = (string)CurrentVersionKey.GetValue("RegisteredOwner");
             label8.Content = (string)CurrentVersionKey.GetValue("RegisteredOrganization");
             CurrentVersionKey.Close();
-            wmi.Dispose();
             key.Close();
         }
 
@@ -214,7 +107,7 @@ namespace Winver
             }
             catch
             {
-                MessageBox.Show("Error");
+                _ = MessageBox.Show("Error");
             }
         }
 
@@ -223,15 +116,19 @@ namespace Winver
             Close();
         }
 
-        private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        private void Window_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == System.Windows.Input.Key.Enter)
+            if (e.Key == Key.Enter)
             {
                 Close();
             }
-            else if (e.Key == System.Windows.Input.Key.Escape)
+            else if (e.Key == Key.Escape)
             {
                 Close();
+            }
+            if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.F11)
+            {
+
             }
         }
     }

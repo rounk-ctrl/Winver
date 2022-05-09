@@ -3,7 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:ui="http://schemas.modernwpf.com/2019"
         xmlns:wpfui="clr-namespace:WPFUI.Controls;assembly=WPFUI"
         mc:Ignorable="d"
         Background="Transparent"
@@ -30,24 +29,24 @@
         UseAeroCaptionButtons="True" />
     </WindowChrome.WindowChrome>
     <Grid>
-        <Label Name="label1" Content="Microsoft Windows" Foreground="White"  HorizontalAlignment="Left" Margin="22,145,0,0" VerticalAlignment="Top" FontSize="12"  FontFamily="Segoe UI" />
-        <Label Name="label2" Content="About Windows" Foreground="White" HorizontalAlignment="Left" Margin="14,9,0,0" VerticalAlignment="Top" FontSize="12.1" FontFamily="Segoe UI" />
+        <Label Name="label1" Content="Microsoft Windows" Foreground="White"  HorizontalAlignment="Left" Margin="45,148,0,0" VerticalAlignment="Top" FontSize="12"  FontFamily="Segoe UI" />
+        <Label Name="label2" Content="About Windows" Foreground="White" HorizontalAlignment="Left" Margin="14,9,0,0" VerticalAlignment="Top" FontSize="12.2" FontFamily="Segoe UI" />
         <Image Name="hero" HorizontalAlignment="Center" Height="180" VerticalAlignment="Top" Width="432"/>
-        <Label Name="label3" Content="Version" Foreground="White" HorizontalAlignment="Left" Margin="23,163,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.618,0.276" FontSize="12.1" FontFamily="Segoe UI" />
-        <Label Name="label4" Content="© Microsoft Corporation. All rights reserved." Foreground="White" HorizontalAlignment="Left" Margin="22,183,0,0" VerticalAlignment="Top" FontSize="12.1" FontFamily="Segoe UI" />
-        <Label Name="label5" Foreground="White" Margin="22,219,18,0" RenderTransformOrigin="0.618,0.276" Height="95" VerticalAlignment="Top" FontSize="12.1" FontFamily="Segoe UI" >
+        <Label Name="label3" Content="Version" Foreground="White" HorizontalAlignment="Left" Margin="45,166,0,0" VerticalAlignment="Top" FontSize="12.2" FontFamily="Segoe UI" />
+        <Label Name="label4" Content="© Microsoft Corporation. All rights reserved." Foreground="White" HorizontalAlignment="Left" Margin="45,186,0,0" VerticalAlignment="Top" FontSize="12.2" FontFamily="Segoe UI" />
+        <Label Name="label5" Foreground="White" Margin="45,222,28,0" Height="95" VerticalAlignment="Top" FontSize="12.2" FontFamily="Segoe UI" >
             <Label.Content>
                 <AccessText x:Name="Text" TextWrapping="Wrap" Text=""/>
             </Label.Content>
         </Label>
-        <TextBlock FontFamily="Segoe UI"  FontSize="12.1" Name="label6" TextWrapping="WrapWithOverflow"  Background="Transparent" Foreground="White"  HorizontalAlignment="Left" Margin="21,308,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.618,0.276" Width="354">
+        <TextBlock FontFamily="Segoe UI"  FontSize="12.2" Name="label6" TextWrapping="WrapWithOverflow"  Background="Transparent" Foreground="White"  HorizontalAlignment="Left" Margin="45,311,0,0" VerticalAlignment="Top" Width="354">
             This product is licensed under the 
-            <Hyperlink TextDecorations="" x:Name="hyper" NavigateUri="about:blank"  RequestNavigate="Hyperlink_RequestNavigate" FontSize="12.1">
+            <Hyperlink TextDecorations="" x:Name="hyper" NavigateUri="about:blank"  RequestNavigate="Hyperlink_RequestNavigate" FontSize="12.2">
                 Microsoft Software Licence Terms
             </Hyperlink> to:
         </TextBlock>
-        <Label Name="label7" Content="User" Foreground="White" HorizontalAlignment="Left" Margin="38,346,0,0" VerticalAlignment="Top" FontSize="12.1" FontFamily="Segoe UI" />
-        <Label Name="label8" Content="Workgroup" Foreground="White" HorizontalAlignment="Left" Margin="38,362,0,0" VerticalAlignment="Top" FontSize="12.1" FontFamily="Segoe UI" />
+        <Label Name="label7" Content="User" Foreground="White" HorizontalAlignment="Left" Margin="68,349,0,0" VerticalAlignment="Top" FontSize="12.2" FontFamily="Segoe UI" />
+        <Label Name="label8" Content="Workgroup" Foreground="White" HorizontalAlignment="Left" Margin="68,365,0,0" VerticalAlignment="Top" FontSize="12.2" FontFamily="Segoe UI" />
         <wpfui:Button FontWeight="Normal" Appearance="Secondary" Cursor="Arrow" Content="OK" FontSize="12.1" HorizontalAlignment="Right" Margin="0,0,14,15"  VerticalAlignment="Bottom" x:Name="but" Width="78" Click="Button_Click"></wpfui:Button>
     </Grid>
 </Window>
