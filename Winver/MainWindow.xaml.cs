@@ -5,8 +5,8 @@ using System.Windows.Media;
 using Microsoft.Win32;
 using System.Windows.Media.Imaging;
 using System.Windows.Input;
-using static Winver.MicaHandler;
 using System.Runtime.InteropServices;
+using static Winver.MicaHandler;
 
 namespace Winver
 {
@@ -125,10 +125,6 @@ namespace Winver
             else if (e.Key == Key.Escape)
             {
                 Close();
-            }
-            if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.F11)
-            {
-
             }
         }
     }
