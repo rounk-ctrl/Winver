@@ -13,6 +13,5 @@ namespace Winver
     /// </summary>
     public partial class App : Application
     {
-
     }
 }
