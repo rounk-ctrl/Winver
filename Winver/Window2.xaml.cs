@@ -4,8 +4,8 @@ using System.Windows.Documents;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.IO;
-using static Winver.MicaHandler;
 using System.Windows.Input;
+using static Winver.MicaHandler;
 
 namespace Winver
 {
@@ -14,12 +14,10 @@ namespace Winver
     /// </summary>
     public partial class Window2 : Window
     {
-
         public Window2()
         {
             InitializeComponent();
         }
-
         private void Window_ContentRendered(object sender, System.EventArgs e)
         {
             // Apply Mica brush and ImmersiveDarkMode if needed
