@@ -19,7 +19,6 @@ namespace Winver
             DWMWA_SYSTEMBACKDROP_TYPE = 38
         }
 
-
         public static void EnableMica(HwndSource source, bool darkThemeEnabled)
         {
             int trueValue = 0x01;
