@@ -1,3 +1,3 @@
 # Winver
 
-winui3 real
+win32 real
