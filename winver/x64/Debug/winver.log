@@ -1,5 +1,0 @@
-﻿  Functions.cpp
-  winver.cpp
-C:\Users\Rounak\source\winver\winver\winver.cpp(246,46): warning C4305: 'argument': truncation from 'double' to 'Gdiplus::REAL'
-  Generating Code...
-  winver.vcxproj -> C:\Users\Rounak\source\winver\x64\Debug\winver.exe
