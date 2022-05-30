@@ -185,7 +185,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         butt = CreateWindow(L"Button", L"OK", WS_CHILD | WS_TABSTOP | WS_VISIBLE | BS_FLAT | BS_DEFPUSHBUTTON, 377, 352, 70, 23, hWnd, NULL, NULL, NULL);
         SetWindowTheme(butt, L"Explorer", nullptr);
         SendMessage(butt, WM_SETFONT, (LPARAM)GetStockObject(DEFAULT_GUI_FONT), true);
-        SendMessageW(hWnd, WM_THEMECHANGED, 0, 0);
+        SendMessageW(butt, WM_THEMECHANGED, 0, 0);
         UpdateWindow(hWnd);
     }
     break;
@@ -199,7 +199,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 DestroyWindow(hWnd);
         }
         break;
-        
     }
     case WM_CTLCOLORSTATIC:
     {
@@ -211,17 +210,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             if (!hbrBkgnd)
                 hbrBkgnd = CreateSolidBrush(darkBkColor);
             return reinterpret_cast<INT_PTR>(hbrBkgnd);
-        }
-    }
-    break;
-    case WM_THEMECHANGED:
-    {
-        if (DarkThemeEnabled)
-        {
-            AllowDarkModeForWindow(hWnd, DarkThemeEnabled);
-            AllowDarkModeForWindow(butt, DarkThemeEnabled);
-            SendMessageW(butt, WM_THEMECHANGED, 0, 0);
-            UpdateWindow(hWnd);
         }
     }
     break;
@@ -237,23 +225,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         FillRect(hdc, &rc, (HBRUSH)GetStockObject(DC_BRUSH));
 
         Gdiplus::Graphics        graphics(hdc);
-        SolidBrush      lightmodetext(Gdiplus::Color(255, 0, 0, 0));
-        SolidBrush      darkmodetext(Gdiplus::Color(255, 255, 255, 255));
-        FontFamily      fontFamily(L"Segoe UI Variable Small");
-        Gdiplus::Font   font(&fontFamily, 9);
-        graphics.DrawString(MsWin, -1, &font, PointF(35, 110), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-        graphics.DrawString(Version, -1, &font, PointF(35, 128), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-        graphics.DrawString(CopyRight, -1, &font, PointF(35, 146), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-        RectF        rectF(35, 180, 385, 70);
-        graphics.DrawString(AboutWin, -1, &font, rectF, NULL, DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-        RectF        imgrectF(65, 10, 305, 90);
-        Gdiplus::Bitmap* pBmp = LoadImageFromResource(hInst, MAKEINTRESOURCE(IDB_PNG2), L"PNG");
-        graphics.DrawImage(pBmp, imgrectF);
-        RectF        arectF(35, 250, 345, 90);
-		graphics.DrawString(EulaText, -1, &font, arectF, NULL, DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-		graphics.DrawString(Owner, -1, &font, PointF(50, 285), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-		graphics.DrawString(Organization, -1, &font, PointF(50, 303), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-
+		DrawStrings(graphics, hInst);
         EndPaint(hWnd, &ps);
     }
     break;
