@@ -20,7 +20,7 @@ BOOL RtlGetVersion(OSVERSIONINFOEX* os) {
     OSVERSIONINFOEXW* osw = &o;
 #endif
 
-    hMod = LoadLibrary(TEXT("ntdll.dll"));
+    hMod = LoadLibraryExW(L"ntdll.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
     if (hMod) {
         func = (RtlGetVersion_FUNC)GetProcAddress(hMod, "RtlGetVersion");
         if (func == 0) {
@@ -86,19 +86,6 @@ LONG GetDWORDRegKey(HKEY hKey, const std::wstring& strValueName, DWORD& nValue)
         nValue = nResult;
     }
     return nError;
-}
-LONG GetStringRegKey(HKEY hKey, const std::wstring &strValueName, std::wstring &strValue, const std::wstring &strDefaultValue)
-{
-	strValue = strDefaultValue;
-	WCHAR szBuffer[512];
-	DWORD dwBufferSize = sizeof(szBuffer);
-	ULONG nError;
-	nError = RegQueryValueExW(hKey, strValueName.c_str(), 0, NULL, (LPBYTE)szBuffer, &dwBufferSize);
-	if (ERROR_SUCCESS == nError)
-	{
-		strValue = szBuffer;
-	}
-	return nError;
 }
 
 void DoStuffv2()
@@ -280,6 +267,7 @@ BOOL DarkTitleBar(HWND hWnd)
 	}
 	return FALSE;
 }
+
 BOOLEAN DrawStrings(Graphics& graphics, HINSTANCE hInst)
 {
 	SolidBrush      lightmodetext(Gdiplus::Color(255, 0, 0, 0));

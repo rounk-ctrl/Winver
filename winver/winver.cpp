@@ -224,7 +224,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         SetDCBrushColor(hdc, DarkThemeEnabled ? darkBkColor : lightBkColor);
         FillRect(hdc, &rc, (HBRUSH)GetStockObject(DC_BRUSH));
 
-        Gdiplus::Graphics        graphics(hdc);
+        Gdiplus::Graphics graphics(hdc);
 		DrawStrings(graphics, hInst);
         EndPaint(hWnd, &ps);
     }
