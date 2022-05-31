@@ -3,6 +3,7 @@
 #include "resource.h"
 
 #define MAX_LOADSTRING 100
+#define BUILD_R11 0
 
 extern LPCTSTR okef;
 extern HKEY hKeyPersonalization;

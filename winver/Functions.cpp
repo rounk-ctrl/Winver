@@ -273,15 +273,20 @@ BOOLEAN DrawStrings(Graphics& graphics, HINSTANCE hInst)
 	SolidBrush      darkmodetext(Gdiplus::Color(255, 255, 255, 255));
 	FontFamily      fontFamily(L"Segoe UI Variable Small");
 	Gdiplus::Font   font(&fontFamily, 9);
-	graphics.DrawString(MsWin, -1, &font, PointF(35, 110), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-	graphics.DrawString(Version, -1, &font, PointF(35, 128), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-	graphics.DrawString(CopyRight, -1, &font, PointF(35, 146), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-	RectF        rectF(35, 180, 385, 70);
+	graphics.DrawString(MsWin, -1, &font, PointF(45, 110), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	graphics.DrawString(Version, -1, &font, PointF(45, 128), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	graphics.DrawString(CopyRight, -1, &font, PointF(45, 146), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	RectF        rectF(45, 180, 385, 70);
 	graphics.DrawString(AboutWin, -1, &font, rectF, NULL, DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+#if BUILD_R11
 	RectF        imgrectF(65, 10, 305, 90);
-	Gdiplus::Bitmap* pBmp = LoadImageFromResource(hInst, MAKEINTRESOURCE(IDB_PNG2), L"PNG");
+	Gdiplus::Bitmap* pBmp = LoadImageFromResource(hInst, MAKEINTRESOURCE(IDB_R11), L"PNG");
+#else
+	RectF        imgrectF(-25, 10, 485, 77);
+	Gdiplus::Bitmap* pBmp = LoadImageFromResource(hInst, MAKEINTRESOURCE(IDB_STOCK), L"PNG");
+#endif
 	graphics.DrawImage(pBmp, imgrectF);
-	graphics.DrawString(Owner, -1, &font, PointF(50, 285), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-	graphics.DrawString(Organization, -1, &font, PointF(50, 303), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	graphics.DrawString(Owner, -1, &font, PointF(60, 285), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	graphics.DrawString(Organization, -1, &font, PointF(60, 303), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
 	return TRUE;
 }

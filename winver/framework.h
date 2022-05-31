@@ -17,6 +17,7 @@
 #include <assert.h>
 #include <gdiplus.h>
 #include <richedit.h>
+#include <shellapi.h>
 #include <fstream>
 #include <atlstr.h>
 #pragma comment (lib, "gdiplus.lib")

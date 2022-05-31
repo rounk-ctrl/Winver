@@ -159,6 +159,9 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="icon.png" />
+    <Image Include="icon1.ico" />
+    <Image Include="IMAGE2123.png" />
+    <Image Include="Windows11InstallationAssistant_IDI_BOXSTUB.ico" />
     <Image Include="winver.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

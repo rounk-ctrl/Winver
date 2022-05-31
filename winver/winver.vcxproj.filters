@@ -51,5 +51,14 @@
     <Image Include="icon.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="IMAGE2123.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="icon1.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Windows11InstallationAssistant_IDI_BOXSTUB.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

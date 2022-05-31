@@ -11,6 +11,7 @@ using namespace Gdiplus;
 // Global Variables:
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
+LPCWSTR title = L"About Windows";
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 HWND butt;
 
@@ -76,6 +77,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
+	if (lpCmdLine == NULL || lpCmdLine[0] == 0)
+	{
+
+	}
+	else
+	{
+		title = lpCmdLine;
+	}
 
     GdiplusStartupInput gdiplusStartupInput;
     ULONG_PTR           gdiplusToken;
@@ -100,7 +109,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     {
         return FALSE;
     }
-	LoadLibrary(TEXT("Msftedit.dll"));
+	LoadLibraryExW(L"Msftedit.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 
 	HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WINVER));
 
@@ -108,11 +117,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	// Main message loop:
 	while (GetMessage(&msg, nullptr, 0, 0))
 	{
-		if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
 	}
 	GdiplusShutdown(gdiplusToken);
 	return (int)msg.wParam;
@@ -129,12 +135,17 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.cbClsExtra = 0;
     wcex.cbWndExtra = 0;
     wcex.hInstance = hInstance;
-    wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_WINVER));
+#if BUILD_R11
+    wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_R11ICO));
+	wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_R11ICO));
+#else 
+	wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_STOCKICO));
+	wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_STOCKICO));
+#endif
     wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wcex.lpszMenuName = NULL;
     wcex.lpszClassName = szWindowClass;
-    wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_WINVER));
 
     return RegisterClassExW(&wcex);
 }
@@ -154,7 +165,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     {
         SetPreferredAppMode(PreferredAppMode::ForceDark);
     }
-    hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+    hWnd = CreateWindowW(szWindowClass, title, WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT, 472, 425, nullptr, nullptr, hInstance, nullptr);
 
     if (!hWnd)
@@ -189,10 +200,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			yes = CreateWindowExW(0, WC_LINK,
 				L"This product is licensed under the <A ID=\"idInfo\">Microsoft Software Licence Terms</A> to: ",
 				WS_VISIBLE | WS_CHILD | WS_TABSTOP,
-				37, 250, 345, 40,
+				47, 250, 345, 40,
 				hWnd, NULL, hInst, NULL);
 			HFONT hFont = CreateFont(16.5, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Segoe UI Variable Small");
 			SendMessage(yes, WM_SETFONT, (LPARAM)hFont, true);
+			::SetFocus(butt);
 			UpdateWindow(hWnd);
 			break;
 		}
@@ -202,7 +214,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 	            HWND hwndBtn = (HWND)lParam;
 				if (hwndBtn == butt)
-					DestroyWindow(hWnd);
+					PostQuitMessage(0);
 			}
 			break;	
 		}
@@ -217,7 +229,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				LITEM   item = pNMLink->item;
 				if (wcscmp(item.szID, L"idInfo") == 0)
 				{
-					DialogBox(hInst, MAKEINTRESOURCE(IDD_EULA), hWnd, EulaProc);
+					// WIP
+					// DialogBox(hInst, MAKEINTRESOURCE(IDD_EULA), hWnd, EulaProc);
+					ShellExecute(hWnd, L"open", L"write.exe", L"C:\\Windows\\System32\\license.rtf", NULL, SW_SHOW);
 				}
 				break;
 			}
