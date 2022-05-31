@@ -78,9 +78,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 	if (lpCmdLine == NULL || lpCmdLine[0] == 0)
-	{
-
-	}
+	{  }
 	else
 	{
 		title = lpCmdLine;
