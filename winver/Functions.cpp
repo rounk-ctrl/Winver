@@ -159,7 +159,6 @@ void DoStuff()
     ver << os.str().c_str();
     ver << ")";
     Version = convertCharArrayToLPCWSTR(ver.str().c_str());
-    EulaText = L"This product is licensed under the Microsoft Software Licence Terms to: ";
 }
 
 Gdiplus::Bitmap* LoadImageFromResource(HMODULE hMod, const wchar_t* resid, const wchar_t* restype)
@@ -282,8 +281,6 @@ BOOLEAN DrawStrings(Graphics& graphics, HINSTANCE hInst)
 	RectF        imgrectF(65, 10, 305, 90);
 	Gdiplus::Bitmap* pBmp = LoadImageFromResource(hInst, MAKEINTRESOURCE(IDB_PNG2), L"PNG");
 	graphics.DrawImage(pBmp, imgrectF);
-	RectF        arectF(35, 250, 345, 90);
-	graphics.DrawString(EulaText, -1, &font, arectF, NULL, DarkThemeEnabled ? &darkmodetext : &lightmodetext);
 	graphics.DrawString(Owner, -1, &font, PointF(50, 285), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
 	graphics.DrawString(Organization, -1, &font, PointF(50, 303), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
 	return TRUE;

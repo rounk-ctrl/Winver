@@ -27,16 +27,16 @@ LPCWSTR MsWin;
 LPCWSTR AboutWin;
 LPCWSTR Version;
 LPCWSTR CopyRight;
-LPCWSTR EulaText;
 LPCWSTR Owner;
 LPCWSTR Organization;
 int DarkThemeEnabled;
+HWND yes;
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
-
+INT_PTR CALLBACK    EulaProc(HWND, UINT, WPARAM, LPARAM);
 
 BOOL GetwinBrandName()
 {
@@ -69,7 +69,6 @@ BOOL GetwinBrandName()
     }
     return BRet;
 }
-
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
                      _In_ LPWSTR    lpCmdLine,
@@ -101,21 +100,22 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     {
         return FALSE;
     }
+	LoadLibrary(TEXT("Msftedit.dll"));
 
-HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WINVER));
+	HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WINVER));
 
-MSG msg;
-// Main message loop:
-while (GetMessage(&msg, nullptr, 0, 0))
-{
-    if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
-    {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-    }
-}
-GdiplusShutdown(gdiplusToken);
-return (int)msg.wParam;
+	MSG msg;
+	// Main message loop:
+	while (GetMessage(&msg, nullptr, 0, 0))
+	{
+		if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+	}
+	GdiplusShutdown(gdiplusToken);
+	return (int)msg.wParam;
 }
 
 ATOM MyRegisterClass(HINSTANCE hInstance)
@@ -180,60 +180,100 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     HBRUSH brush = CreateSolidBrush(darkBkColor);
     switch (message)
     {
-    case WM_CREATE:
-    {
-        butt = CreateWindow(L"Button", L"OK", WS_CHILD | WS_TABSTOP | WS_VISIBLE | BS_FLAT | BS_DEFPUSHBUTTON, 377, 352, 70, 23, hWnd, NULL, NULL, NULL);
-        SetWindowTheme(butt, L"Explorer", nullptr);
-        SendMessage(butt, WM_SETFONT, (LPARAM)GetStockObject(DEFAULT_GUI_FONT), true);
-        SendMessageW(butt, WM_THEMECHANGED, 0, 0);
-        UpdateWindow(hWnd);
-    }
-    break;
-    case WM_COMMAND:
-    {
-        if ((HIWORD(wParam) == BN_CLICKED) && (lParam != 0))
-        {
-            HWND hwndBtn = (HWND)lParam;
+		case WM_CREATE:
+		{
+	        butt = CreateWindow(L"Button", L"OK", WS_CHILD | WS_TABSTOP | WS_VISIBLE | BS_FLAT | BS_DEFPUSHBUTTON, 377, 352, 70, 23, hWnd, NULL, hInst, NULL);
+			SetWindowTheme(butt, L"Explorer", nullptr);
+			SendMessage(butt, WM_SETFONT, (LPARAM)GetStockObject(DEFAULT_GUI_FONT), true);
+			SendMessageW(butt, WM_THEMECHANGED, 0, 0);
+			yes = CreateWindowExW(0, WC_LINK,
+				L"This product is licensed under the <A ID=\"idInfo\">Microsoft Software Licence Terms</A> to: ",
+				WS_VISIBLE | WS_CHILD | WS_TABSTOP,
+				37, 250, 345, 40,
+				hWnd, NULL, hInst, NULL);
+			HFONT hFont = CreateFont(16.5, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Segoe UI Variable Small");
+			SendMessage(yes, WM_SETFONT, (LPARAM)hFont, true);
+			UpdateWindow(hWnd);
+			break;
+		}
+		case WM_COMMAND:
+		{
+	        if ((HIWORD(wParam) == BN_CLICKED) && (lParam != 0))
+			{
+	            HWND hwndBtn = (HWND)lParam;
+				if (hwndBtn == butt)
+					DestroyWindow(hWnd);
+			}
+			break;	
+		}
+		case WM_NOTIFY:
+		switch (((LPNMHDR)lParam)->code)
+		{
+			case NM_CLICK:          // Fall through to the next case.
 
-            if (hwndBtn == butt)
-                DestroyWindow(hWnd);
-        }
-        break;
-    }
-    case WM_CTLCOLORSTATIC:
-    {
-        if (DarkThemeEnabled)
-        {
-            HDC hdc = reinterpret_cast<HDC>(wParam);
-            SetTextColor(hdc, darkTextColor);
-            SetBkColor(hdc, darkBkColor);
-            if (!hbrBkgnd)
-                hbrBkgnd = CreateSolidBrush(darkBkColor);
-            return reinterpret_cast<INT_PTR>(hbrBkgnd);
-        }
-    }
-    break;
-    case WM_ERASEBKGND:
-        return 0;
-    case WM_PAINT:
-    {
-        RECT rc;
-        hdc = BeginPaint(hWnd, &ps);
+			case NM_RETURN:
+			{
+				PNMLINK pNMLink = (PNMLINK)lParam;
+				LITEM   item = pNMLink->item;
+				if (wcscmp(item.szID, L"idInfo") == 0)
+				{
+					DialogBox(hInst, MAKEINTRESOURCE(IDD_EULA), hWnd, EulaProc);
+				}
+				break;
+			}
+		}
+		case WM_CTLCOLORSTATIC:
+		{
+	        if (DarkThemeEnabled)
+			{
+	            HDC hdc = reinterpret_cast<HDC>(wParam);
+				SetTextColor(hdc, darkTextColor);
+				SetBkColor(hdc, darkBkColor);
+				if (!hbrBkgnd)
+					hbrBkgnd = CreateSolidBrush(darkBkColor);
+	            return reinterpret_cast<INT_PTR>(hbrBkgnd);
+		    }
+			break;
+		}
+		case WM_ERASEBKGND:
+	        return 0;
+		case WM_PAINT:
+	    {
+			RECT rc;
+			hdc = BeginPaint(hWnd, &ps);
+					
+			GetClientRect(hWnd, &rc);
+			SetDCBrushColor(hdc, DarkThemeEnabled ? darkBkColor : lightBkColor);
+			FillRect(hdc, &rc, (HBRUSH)GetStockObject(DC_BRUSH));
 
-        GetClientRect(hWnd, &rc);
-        SetDCBrushColor(hdc, DarkThemeEnabled ? darkBkColor : lightBkColor);
-        FillRect(hdc, &rc, (HBRUSH)GetStockObject(DC_BRUSH));
-
-        Gdiplus::Graphics graphics(hdc);
-		DrawStrings(graphics, hInst);
-        EndPaint(hWnd, &ps);
-    }
-    break;
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        break;
-    default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
-    }
+	        Gdiplus::Graphics graphics(hdc);
+			DrawStrings(graphics, hInst);
+			EndPaint(hWnd, &ps);
+			break;
+		}
+		case WM_DESTROY:
+			PostQuitMessage(0);
+			break;
+		default:
+			return DefWindowProc(hWnd, message, wParam, lParam);
+	}
     return 0;
+}
+INT_PTR CALLBACK EulaProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	UNREFERENCED_PARAMETER(lParam);
+	switch (message)
+	{
+		case WM_INITDIALOG:
+		{
+			HWND handle = GetDlgItem(hDlg, IDC_RICHEDIT21);
+		}
+		case WM_COMMAND:
+			if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
+			{
+				EndDialog(hDlg, LOWORD(wParam));
+				return (INT_PTR)TRUE;
+			}
+	}
+	return (INT_PTR)FALSE;
 }

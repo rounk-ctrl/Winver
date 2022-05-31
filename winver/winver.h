@@ -11,7 +11,6 @@ extern LPCWSTR AboutWin;
 extern LPCWSTR Version;
 extern LPCWSTR CopyRight;
 extern LPCWSTR Owner;
-extern LPCWSTR EulaText;
 extern OSVERSIONINFOEX os;
 extern LPCWSTR Organization;
 extern int DarkThemeEnabled;
