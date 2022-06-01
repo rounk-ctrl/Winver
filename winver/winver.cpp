@@ -13,7 +13,6 @@ HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 LPCWSTR title = L"About Windows";
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
-HWND butt;
 
 // dark mode stuff
 fnSetPreferredAppMode SetPreferredAppMode;
@@ -32,6 +31,7 @@ LPCWSTR Owner;
 LPCWSTR Organization;
 int DarkThemeEnabled;
 HWND yes;
+HWND button;
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -43,7 +43,7 @@ BOOL GetwinBrandName()
 {
     BOOL BRet = FALSE;
     HMODULE hModNtdll = NULL;
-    if (hModNtdll = ::LoadLibraryW(L"winbrand.dll"))
+    if (hModNtdll = LoadLibraryExW(L"winbrand.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32))
     {
         typedef LPTSTR(WINAPI* BrandingFormatString) (const wchar_t*);
         BrandingFormatString getwinName;
@@ -70,6 +70,27 @@ BOOL GetwinBrandName()
     }
     return BRet;
 }
+DWORD CALLBACK EditStreamCallback(DWORD_PTR dwCookie, LPBYTE lpBuff, LONG cb, PLONG pcb)
+{
+	HANDLE hFile = (HANDLE)dwCookie;
+	return !ReadFile(hFile, lpBuff, cb, (DWORD *)pcb, NULL);
+}
+BOOL FillRichEditFromFile(HWND hwnd, LPCTSTR pszFile)
+{
+	BOOL fSuccess = FALSE;
+	HANDLE hFile = CreateFile(pszFile, GENERIC_READ, FILE_SHARE_READ,
+		0, OPEN_EXISTING,
+		FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+	if (hFile != INVALID_HANDLE_VALUE) {
+		EDITSTREAM es = { (DWORD_PTR)hFile, 0, EditStreamCallback };
+		if (SendMessage(hwnd, EM_STREAMIN, SF_RTF, (LPARAM)&es) &&
+			es.dwError == 0) {
+			fSuccess = TRUE;
+		}
+		CloseHandle(hFile);
+	}
+	return fSuccess;
+}
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
                      _In_ LPWSTR    lpCmdLine,
@@ -77,12 +98,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
-	if (lpCmdLine == NULL || lpCmdLine[0] == 0)
-	{  }
-	else
-	{
-		title = lpCmdLine;
-	}
 
     GdiplusStartupInput gdiplusStartupInput;
     ULONG_PTR           gdiplusToken;
@@ -91,7 +106,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     if (st != Ok) return FALSE;
 
     // Initialize global strings
-    LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
+
+	CString wintitle(MAKEINTRESOURCE(IDS_APP_TITLE));
+	title = wintitle;
     LoadStringW(hInstance, IDC_WINVER, szWindowClass, MAX_LOADSTRING);
     MyRegisterClass(hInstance);
 
@@ -99,17 +116,36 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     {
         return FALSE;
     }
+
     DoStuff();
 	DoStuffv2();
 
-    // Perform application initialization:
-    if (!InitInstance(hInstance, nCmdShow))
-    {
-        return FALSE;
-    }
-	LoadLibraryExW(L"Msftedit.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+#if BUILD_R11
+	LPWSTR *lpszArgv;
+	int nArgc{};
+	lpszArgv = CommandLineToArgvW(GetCommandLineW(), &nArgc);
+	for (int i = 0; i < nArgc; i++)
+	{
+		if (!wcscmp(lpszArgv[i], L"/t"))
+		{
+			int ok = i + 1;
+			title = lpszArgv[ok];
+		}
+		else if (!wcscmp(lpszArgv[i], L"/a"))
+		{
+			int ok = i + 1;
+			MsWin = lpszArgv[ok];
+		}
+	}
+#endif
 
-	HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WINVER));
+    // Perform application initialization:
+	if (!InitInstance(hInstance, nCmdShow))
+	{
+		return FALSE;
+	}
+
+	LoadLibraryExW(L"Msftedit.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 
 	MSG msg;
 	// Main message loop:
@@ -171,10 +207,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
         return FALSE;
     }
 
-    SetWindowLong(hWnd, GWL_STYLE, GetWindowLong(hWnd, GWL_STYLE) & ~WS_MINIMIZEBOX);
-    SetWindowLong(hWnd, GWL_STYLE, GetWindowLong(hWnd, GWL_STYLE) & ~WS_MAXIMIZEBOX);
-    SetWindowLong(hWnd, GWL_STYLE, GetWindowLong(hWnd, GWL_STYLE) & ~WS_SIZEBOX);
-
+    SetWindowLong(hWnd, GWL_STYLE, GetWindowLong(hWnd, GWL_STYLE) & ~WS_MINIMIZEBOX & ~WS_MAXIMIZEBOX &  ~WS_SIZEBOX);
 	DarkTitleBar(hWnd);
     ApplyMica(hWnd);
     ShowWindow(hWnd, nCmdShow);
@@ -191,19 +224,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
 		case WM_CREATE:
 		{
-	        butt = CreateWindow(L"Button", L"OK", WS_CHILD | WS_TABSTOP | WS_VISIBLE | BS_FLAT | BS_DEFPUSHBUTTON, 377, 352, 70, 23, hWnd, NULL, hInst, NULL);
-			SetWindowTheme(butt, L"Explorer", nullptr);
-			SendMessage(butt, WM_SETFONT, (LPARAM)GetStockObject(DEFAULT_GUI_FONT), true);
-			SendMessageW(butt, WM_THEMECHANGED, 0, 0);
-			yes = CreateWindowExW(0, WC_LINK,
-				L"This product is licensed under the <A ID=\"idInfo\">Microsoft Software Licence Terms</A> to: ",
-				WS_VISIBLE | WS_CHILD | WS_TABSTOP,
-				47, 250, 345, 40,
-				hWnd, NULL, hInst, NULL);
-			HFONT hFont = CreateFont(16.5, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Segoe UI Variable Small");
-			SendMessage(yes, WM_SETFONT, (LPARAM)hFont, true);
-			::SetFocus(butt);
-			UpdateWindow(hWnd);
+			CreateHwnds(hWnd, hInst);
 			break;
 		}
 		case WM_COMMAND:
@@ -211,7 +232,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	        if ((HIWORD(wParam) == BN_CLICKED) && (lParam != 0))
 			{
 	            HWND hwndBtn = (HWND)lParam;
-				if (hwndBtn == butt)
+				if (hwndBtn == button)
 					PostQuitMessage(0);
 			}
 			break;	
@@ -276,10 +297,6 @@ INT_PTR CALLBACK EulaProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	UNREFERENCED_PARAMETER(lParam);
 	switch (message)
 	{
-		case WM_INITDIALOG:
-		{
-			HWND handle = GetDlgItem(hDlg, IDC_RICHEDIT21);
-		}
 		case WM_COMMAND:
 			if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
 			{

@@ -27,3 +27,4 @@ Gdiplus::Bitmap* LoadImageFromResource(HMODULE hMod, const wchar_t* resid, const
 void DoStuffv2();
 BOOL DarkTitleBar(HWND hWnd);
 BOOLEAN DrawStrings(Gdiplus::Graphics& graphics, HINSTANCE hInst);
+BOOLEAN CreateHwnds(HWND hWnd, HINSTANCE hInst);

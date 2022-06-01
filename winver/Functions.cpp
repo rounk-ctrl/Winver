@@ -290,3 +290,21 @@ BOOLEAN DrawStrings(Graphics& graphics, HINSTANCE hInst)
 	graphics.DrawString(Organization, -1, &font, PointF(60, 303), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
 	return TRUE;
 }
+BOOLEAN CreateHwnds(HWND hWnd, HINSTANCE hInst)
+{
+	button = CreateWindow(L"Button", L"OK", WS_CHILD | WS_TABSTOP | WS_VISIBLE | BS_FLAT | BS_DEFPUSHBUTTON, 377, 352, 70, 23, hWnd, NULL, hInst, NULL);
+	SetWindowTheme(button, L"Explorer", nullptr);
+	SendMessage(button, WM_SETFONT, (LPARAM)GetStockObject(DEFAULT_GUI_FONT), true);
+	SendMessageW(button, WM_THEMECHANGED, 0, 0);
+	CString eulatxt(MAKEINTRESOURCE(IDS_TEXT_EULA));
+	yes = CreateWindowExW(0, WC_LINK,
+		eulatxt,
+		WS_VISIBLE | WS_CHILD | WS_TABSTOP,
+		47, 250, 345, 40,
+		hWnd, NULL, hInst, NULL);
+	HFONT hFont = CreateFont(16.5, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Segoe UI Variable Small");
+	SendMessage(yes, WM_SETFONT, (LPARAM)hFont, true);
+	::SetFocus(button);
+	UpdateWindow(hWnd);
+	return TRUE;
+}

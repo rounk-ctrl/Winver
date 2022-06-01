@@ -2,9 +2,13 @@
 // Microsoft Visual C++ generated include file.
 // Used by winver.rc
 //
+#define BUILD_R11                       0
 #define IDC_MYICON                      2
+#define MAX_LOADSTRING                  100
 #define IDD_WINVER_DIALOG               102
 #define IDS_APP_TITLE                   103
+#define IDS_TEX_EULA                    104
+#define IDS_TEXT_EULA                   104
 #define IDS_TEXT_COPY                   105
 #define IDI_WINVER                      107
 #define IDI_R11ICO                      107
