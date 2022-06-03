@@ -32,12 +32,6 @@ int DarkThemeEnabled;
 HWND yes;
 HWND button;
 
-// window size
-#define INITIALX_96DPI 50 
-#define INITIALY_96DPI 50 
-#define INITIALWIDTH_96DPI 100 
-#define INITIALHEIGHT_96DPI 50 
-
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
