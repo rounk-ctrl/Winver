@@ -267,17 +267,37 @@ BOOL DarkTitleBar(HWND hWnd)
 	return FALSE;
 }
 
-BOOLEAN DrawStrings(Graphics& graphics, HINSTANCE hInst)
+int currentMonitorDpi;
+PointF FixedPointF(PointF o)
+{
+	int iDpi = currentMonitorDpi;
+	REAL X = MulDiv(o.X, iDpi, 96);
+	REAL Y = MulDiv(o.Y, iDpi, 96);
+	return PointF(X, Y);
+}
+RectF FixedRectF(RectF o)
+{
+	int iDpi = currentMonitorDpi;
+	REAL X = MulDiv(o.X, iDpi, 96);
+	REAL Y = MulDiv(o.Y, iDpi, 96);
+	REAL width = MulDiv(o.Width, iDpi, 96);
+	REAL height = MulDiv(o.Height, iDpi, 96);
+	return RectF(X, Y, width, height);
+}
+BOOLEAN DrawStrings(HWND hWnd, Graphics& graphics, HINSTANCE hInst)
 {
 	SolidBrush      lightmodetext(Gdiplus::Color(255, 0, 0, 0));
 	SolidBrush      darkmodetext(Gdiplus::Color(255, 255, 255, 255));
+	int primaryMonitorDpi = GetDpiForWindow(::GetDesktopWindow());
+	currentMonitorDpi = ::GetDpiForWindow(hWnd);
+	Gdiplus::REAL emSize = 9.0 * currentMonitorDpi / primaryMonitorDpi;
 	FontFamily      fontFamily(L"Segoe UI Variable Small");
-	Gdiplus::Font   font(&fontFamily, 9);
-	graphics.DrawString(MsWin, -1, &font, PointF(45, 110), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-	graphics.DrawString(Version, -1, &font, PointF(45, 128), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-	graphics.DrawString(CopyRight, -1, &font, PointF(45, 146), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	Gdiplus::Font   font(&fontFamily, emSize);
+	graphics.DrawString(MsWin, -1, &font, FixedPointF(PointF(45, 110)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	graphics.DrawString(Version, -1, &font, FixedPointF(PointF(45, 128)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	graphics.DrawString(CopyRight, -1, &font, FixedPointF(PointF(45, 146)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
 	RectF        rectF(45, 180, 385, 70);
-	graphics.DrawString(AboutWin, -1, &font, rectF, NULL, DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	graphics.DrawString(AboutWin, -1, &font, FixedRectF(rectF), NULL, DarkThemeEnabled ? &darkmodetext : &lightmodetext);
 #if BUILD_R11
 	RectF        imgrectF(65, 10, 305, 90);
 	Gdiplus::Bitmap* pBmp = LoadImageFromResource(hInst, MAKEINTRESOURCE(IDB_R11), L"PNG");
@@ -286,13 +306,20 @@ BOOLEAN DrawStrings(Graphics& graphics, HINSTANCE hInst)
 	Gdiplus::Bitmap* pBmp = LoadImageFromResource(hInst, MAKEINTRESOURCE(IDB_STOCK), L"PNG");
 #endif
 	graphics.DrawImage(pBmp, imgrectF);
-	graphics.DrawString(Owner, -1, &font, PointF(60, 285), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-	graphics.DrawString(Organization, -1, &font, PointF(60, 303), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	graphics.DrawString(Owner, -1, &font, FixedPointF(PointF(60, 285)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	graphics.DrawString(Organization, -1, &font, FixedPointF(PointF(60, 303)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
 	return TRUE;
+}
+void FixFontForButton(HWND hWnd)
+{
+	int pointSize = 9;
+	int height = -MulDiv(pointSize, ::GetDpiForWindow(hWnd), 72);
+	HFONT hFont = CreateFont(height, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Segoe UI Variable Small");
+	SendMessage(yes, WM_SETFONT, (LPARAM)hFont, true);
 }
 BOOLEAN CreateHwnds(HWND hWnd, HINSTANCE hInst)
 {
-	button = CreateWindow(L"Button", L"OK", WS_CHILD | WS_TABSTOP | WS_VISIBLE | BS_FLAT | BS_DEFPUSHBUTTON, 377, 352, 70, 23, hWnd, NULL, hInst, NULL);
+	button = CreateWindow(L"Button", L"OK", WS_CHILD | WS_TABSTOP | WS_VISIBLE | BS_FLAT | BS_DEFPUSHBUTTON, 0, 0, 0, 0, hWnd, NULL, hInst, NULL);
 	SetWindowTheme(button, L"Explorer", nullptr);
 	SendMessage(button, WM_SETFONT, (LPARAM)GetStockObject(DEFAULT_GUI_FONT), true);
 	SendMessageW(button, WM_THEMECHANGED, 0, 0);
@@ -300,10 +327,9 @@ BOOLEAN CreateHwnds(HWND hWnd, HINSTANCE hInst)
 	yes = CreateWindowExW(0, WC_LINK,
 		eulatxt,
 		WS_VISIBLE | WS_CHILD | WS_TABSTOP,
-		47, 250, 345, 40,
+		0, 0, 0, 0,
 		hWnd, NULL, hInst, NULL);
-	HFONT hFont = CreateFont(16.5, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Segoe UI Variable Small");
-	SendMessage(yes, WM_SETFONT, (LPARAM)hFont, true);
+	FixFontForButton(hWnd);
 	::SetFocus(button);
 	UpdateWindow(hWnd);
 	return TRUE;

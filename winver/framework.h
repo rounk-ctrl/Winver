@@ -15,6 +15,7 @@
 #include <dwmapi.h>
 #include <Uxtheme.h>
 #include <assert.h>
+#include <shellscalingapi.h>
 #include <gdiplus.h>
 #include <richedit.h>
 #include <shellapi.h>
@@ -22,6 +23,7 @@
 #include <atlstr.h>
 #pragma comment (lib, "gdiplus.lib")
 # pragma comment(lib, "uxtheme.lib")
+# pragma comment(lib, "shcore.lib")
 #pragma comment(lib, "comctl32.lib")
 # pragma comment(lib, "dwmapi.lib")
 

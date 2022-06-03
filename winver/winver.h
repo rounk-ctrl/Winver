@@ -2,8 +2,9 @@
 
 #include "resource.h"
 
+// change the BUILD_R11 value in resource.h if you want to build for Rectify11 or not.
+
 #define MAX_LOADSTRING 100
-#define BUILD_R11 0
 
 extern LPCTSTR okef;
 extern HKEY hKeyPersonalization;

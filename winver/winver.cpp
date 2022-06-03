@@ -10,8 +10,7 @@ using namespace Gdiplus;
 
 // Global Variables:
 HINSTANCE hInst;                                // current instance
-WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
-LPCWSTR title = L"About Windows";
+LPCWSTR title;									// The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 
 // dark mode stuff
@@ -32,6 +31,12 @@ LPCWSTR Organization;
 int DarkThemeEnabled;
 HWND yes;
 HWND button;
+
+// window size
+#define INITIALX_96DPI 50 
+#define INITIALY_96DPI 50 
+#define INITIALWIDTH_96DPI 100 
+#define INITIALHEIGHT_96DPI 50 
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -106,6 +111,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     if (st != Ok) return FALSE;
 
     // Initialize global strings
+
 
 	CString wintitle(MAKEINTRESOURCE(IDS_APP_TITLE));
 	title = wintitle;
@@ -202,10 +208,20 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     hWnd = CreateWindowW(szWindowClass, title, WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT, 472, 425, nullptr, nullptr, hInstance, nullptr);
 
-    if (!hWnd)
-    {
-        return FALSE;
-    }
+	if (!hWnd)
+	{
+		return FALSE;
+	}
+
+	UINT dpi = GetDpiForWindow(hWnd);
+	float scaling_factor = static_cast<float>(dpi) / 96;
+	RECT scaled_size;
+	scaled_size.left = 0;
+	scaled_size.top = 0;
+	scaled_size.right = static_cast<LONG>(455 * scaling_factor);
+	scaled_size.bottom = static_cast<LONG>(375 * scaling_factor);
+	AdjustWindowRectExForDpi(&scaled_size, WS_OVERLAPPEDWINDOW, false, 0, dpi);
+	SetWindowPos(hWnd, nullptr, CW_USEDEFAULT, CW_USEDEFAULT, scaled_size.right - scaled_size.left, scaled_size.bottom - scaled_size.top, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
 
     SetWindowLong(hWnd, GWL_STYLE, GetWindowLong(hWnd, GWL_STYLE) & ~WS_MINIMIZEBOX & ~WS_MAXIMIZEBOX &  ~WS_SIZEBOX);
 	DarkTitleBar(hWnd);
@@ -214,7 +230,24 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     UpdateWindow(hWnd);
     return TRUE;
 }
-
+void UpdateButtonLayoutForDpi(HWND hWnd)
+{
+	int iDpi = ::GetDpiForWindow(hWnd);
+	int dpiScaledX = MulDiv(373, iDpi, 96);
+	int dpiScaledY = MulDiv(340, iDpi, 96);
+	int dpiScaledWidth = MulDiv(70, iDpi, 96);
+	int dpiScaledHeight = MulDiv(23, iDpi, 96);
+	SetWindowPos(hWnd, hWnd, dpiScaledX, dpiScaledY, dpiScaledWidth, dpiScaledHeight, SWP_NOZORDER | SWP_NOACTIVATE);
+}
+void UpdateEulaLayoutForDpi(HWND hWnd)
+{
+	int iDpi = ::GetDpiForWindow(hWnd);
+	int dpiScaledX = MulDiv(47, iDpi, 96);
+	int dpiScaledY = MulDiv(249, iDpi, 96);
+	int dpiScaledWidth = MulDiv(345, iDpi, 96);
+	int dpiScaledHeight = MulDiv(40, iDpi, 96);
+	SetWindowPos(hWnd, hWnd, dpiScaledX, dpiScaledY, dpiScaledWidth, dpiScaledHeight, SWP_NOZORDER | SWP_NOACTIVATE);
+}
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     HDC hdc;
@@ -225,7 +258,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case WM_CREATE:
 		{
 			CreateHwnds(hWnd, hInst);
+			UpdateButtonLayoutForDpi(button);
+			UpdateEulaLayoutForDpi(yes);
 			break;
+		}
+		case WM_DPICHANGED:
+		{
+			auto rect = *reinterpret_cast<RECT *>(lParam);
+			SetWindowPos(hWnd,
+				0, // No relative window
+				rect.left,
+				rect.top,
+				rect.right - rect.left,
+				rect.bottom - rect.top,
+				SWP_NOACTIVATE | SWP_NOZORDER);
+			UpdateButtonLayoutForDpi(button);
+			UpdateEulaLayoutForDpi(yes);
+			FixFontForButton(hWnd);
 		}
 		case WM_COMMAND:
 		{
@@ -280,7 +329,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			FillRect(hdc, &rc, (HBRUSH)GetStockObject(DC_BRUSH));
 
 	        Gdiplus::Graphics graphics(hdc);
-			DrawStrings(graphics, hInst);
+			DrawStrings(hWnd, graphics, hInst);
 			EndPaint(hWnd, &ps);
 			break;
 		}
