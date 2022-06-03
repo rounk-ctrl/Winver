@@ -305,7 +305,7 @@ BOOLEAN DrawStrings(HWND hWnd, Graphics& graphics, HINSTANCE hInst)
 	RectF        imgrectF(-25, 10, 485, 77);
 	Gdiplus::Bitmap* pBmp = LoadImageFromResource(hInst, MAKEINTRESOURCE(IDB_STOCK), L"PNG");
 #endif
-	graphics.DrawImage(pBmp, imgrectF);
+	graphics.DrawImage(pBmp, FixedRectF(imgrectF));
 	graphics.DrawString(Owner, -1, &font, FixedPointF(PointF(60, 285)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
 	graphics.DrawString(Organization, -1, &font, FixedPointF(PointF(60, 303)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
 	return TRUE;
