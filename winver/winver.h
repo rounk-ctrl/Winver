@@ -18,6 +18,9 @@ extern LPCWSTR Organization;
 extern int DarkThemeEnabled;
 extern HWND yes;
 extern HWND button;
+extern int CopyWidth;
+extern int OwnerY;
+extern int OrganizationY;
 
 enum IMMERSIVE_HC_CACHE_MODE
 {

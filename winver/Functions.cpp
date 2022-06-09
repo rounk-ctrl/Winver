@@ -127,36 +127,38 @@ void DoStuffv2()
 	}
 }
 
-void DoStuff()
+void DoStuff(HINSTANCE hInst)
 {
     HKEY hKey;
 	wchar_t version[MAX_LOADSTRING];
+	wchar_t versionstr[MAX_LOADSTRING];
+	wchar_t buildstr[MAX_LOADSTRING];
     DWORD UBR{};
 	DWORD type = REG_SZ, size = MAX_LOADSTRING;
 	RegOpenKey(HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Windows NT\\CurrentVersion", &hKey);
-    if (hKey)
-    {
+	if (hKey)
+	{
 		int error = RegQueryValueEx(hKey, L"DisplayVersion", NULL, &type, (LPBYTE)&version, &size);
-        if (error != ERROR_SUCCESS)
-        {
-            error = RegQueryValueExW(hKey, L"ReleaseId", NULL, &type, (LPBYTE)&version, &size);
-        }
-        GetDWORDRegKey(hKey, L"UBR", UBR);
+		if (error != ERROR_SUCCESS)
+		{
+			error = RegQueryValueExW(hKey, L"ReleaseId", NULL, &type, (LPBYTE)&version, &size);
+		}
+		GetDWORDRegKey(hKey, L"UBR", UBR);
 		RegCloseKey(hKey);
-    }
+	}
     RtlGetVersion(&os);
+	LoadStringW(hInst, IDS_TEXT_VERSION, versionstr, MAX_LOADSTRING);
+	LoadStringW(hInst, IDS_TEXT_BUILD, buildstr, MAX_LOADSTRING);
     std::ostringstream ver;
-    ver << "Version ";
-    _bstr_t verstr(version);
+	_bstr_t verstr2(versionstr);
+    ver << verstr2;
+	_bstr_t verstr(version);
     ver << verstr;
-    ver << " (OS Build ";
-    char buildno[10];
-    sprintf_s(buildno, "%d", os.dwBuildNumber);
-    ver <<  buildno;
+	_bstr_t buildstr2(buildstr);
+    ver << buildstr2;
+    ver << os.dwBuildNumber;
     ver << ".";
-    std::ostringstream os;
-    os << UBR;
-    ver << os.str().c_str();
+    ver << UBR;
     ver << ")";
     Version = convertCharArrayToLPCWSTR(ver.str().c_str());
 }
@@ -296,7 +298,7 @@ BOOLEAN DrawStrings(HWND hWnd, Graphics& graphics, HINSTANCE hInst)
 	graphics.DrawString(MsWin, -1, &font, FixedPointF(PointF(45, 110)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
 	graphics.DrawString(Version, -1, &font, FixedPointF(PointF(45, 128)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
 	graphics.DrawString(CopyRight, -1, &font, FixedPointF(PointF(45, 146)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-	RectF        rectF(45, 180, 385, 70);
+	RectF        rectF(45, 170, CopyWidth, 80);
 	graphics.DrawString(AboutWin, -1, &font, FixedRectF(rectF), NULL, DarkThemeEnabled ? &darkmodetext : &lightmodetext);
 #if BUILD_R11
 	RectF        imgrectF(65, 10, 305, 90);
@@ -306,11 +308,11 @@ BOOLEAN DrawStrings(HWND hWnd, Graphics& graphics, HINSTANCE hInst)
 	Gdiplus::Bitmap* pBmp = LoadImageFromResource(hInst, MAKEINTRESOURCE(IDB_STOCK), L"PNG");
 #endif
 	graphics.DrawImage(pBmp, FixedRectF(imgrectF));
-	graphics.DrawString(Owner, -1, &font, FixedPointF(PointF(60, 285)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-	graphics.DrawString(Organization, -1, &font, FixedPointF(PointF(60, 303)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	graphics.DrawString(Owner, -1, &font, FixedPointF(PointF(60, OwnerY)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	graphics.DrawString(Organization, -1, &font, FixedPointF(PointF(60, OrganizationY)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
 	return TRUE;
 }
-void FixFontForButton(HWND hWnd)
+void FixFontForEula(HWND hWnd)
 {
 	int pointSize = 9;
 	int height = -MulDiv(pointSize, ::GetDpiForWindow(hWnd), 72);
@@ -324,13 +326,10 @@ BOOLEAN CreateHwnds(HWND hWnd, HINSTANCE hInst)
 	SendMessage(button, WM_SETFONT, (LPARAM)GetStockObject(DEFAULT_GUI_FONT), true);
 	SendMessageW(button, WM_THEMECHANGED, 0, 0);
 	CString eulatxt(MAKEINTRESOURCE(IDS_TEXT_EULA));
-	yes = CreateWindowExW(0, WC_LINK,
-		eulatxt,
-		WS_VISIBLE | WS_CHILD | WS_TABSTOP,
-		0, 0, 0, 0,
-		hWnd, NULL, hInst, NULL);
-	FixFontForButton(hWnd);
-	::SetFocus(button);
+	yes = CreateWindowExW(0, WC_LINK, eulatxt, WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 0, 0, hWnd, (HMENU)10001, hInst, NULL);
+	FixFontForEula(hWnd);
+	SendMessage(hWnd, DM_SETDEFID, (WPARAM)button, 0);
+	SetFocus(button);
 	UpdateWindow(hWnd);
 	return TRUE;
 }

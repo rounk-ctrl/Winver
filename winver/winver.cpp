@@ -32,6 +32,16 @@ int DarkThemeEnabled;
 HWND yes;
 HWND button;
 
+// window size
+int Window_Width = 455;
+int Window_Height = 375;
+int EulaY = 249;
+int CopyWidth = 385;
+int OwnerY = 285;
+int OrganizationY = 303;
+int ButtonX = 373;
+int ButtonY = 340;
+
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
@@ -106,7 +116,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     // Initialize global strings
 
-
+	SetThreadUILanguage(LANG_POLISH);
+	Window_Width = 465;
+	Window_Height = 400;
+	EulaY = 266;
+	CopyWidth = 400;
+	OwnerY = 305;
+	OrganizationY = 323;
+	ButtonX = 382;
+	ButtonY = 363;
 	CString wintitle(MAKEINTRESOURCE(IDS_APP_TITLE));
 	title = wintitle;
     LoadStringW(hInstance, IDC_WINVER, szWindowClass, MAX_LOADSTRING);
@@ -117,7 +135,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
-    DoStuff();
+    DoStuff(hInstance);
 	DoStuffv2();
 
 #if BUILD_R11
@@ -200,7 +218,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
         SetPreferredAppMode(PreferredAppMode::ForceDark);
     }
     hWnd = CreateWindowW(szWindowClass, title, WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, 472, 425, nullptr, nullptr, hInstance, nullptr);
+        CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, hInstance, nullptr);
 
 	if (!hWnd)
 	{
@@ -212,11 +230,10 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	RECT scaled_size;
 	scaled_size.left = 0;
 	scaled_size.top = 0;
-	scaled_size.right = static_cast<LONG>(455 * scaling_factor);
-	scaled_size.bottom = static_cast<LONG>(375 * scaling_factor);
+	scaled_size.right = static_cast<LONG>(Window_Width * scaling_factor);
+	scaled_size.bottom = static_cast<LONG>(Window_Height * scaling_factor);
 	AdjustWindowRectExForDpi(&scaled_size, WS_OVERLAPPEDWINDOW, false, 0, dpi);
 	SetWindowPos(hWnd, nullptr, CW_USEDEFAULT, CW_USEDEFAULT, scaled_size.right - scaled_size.left, scaled_size.bottom - scaled_size.top, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
-
     SetWindowLong(hWnd, GWL_STYLE, GetWindowLong(hWnd, GWL_STYLE) & ~WS_MINIMIZEBOX & ~WS_MAXIMIZEBOX &  ~WS_SIZEBOX);
 	DarkTitleBar(hWnd);
     ApplyMica(hWnd);
@@ -227,8 +244,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 void UpdateButtonLayoutForDpi(HWND hWnd)
 {
 	int iDpi = ::GetDpiForWindow(hWnd);
-	int dpiScaledX = MulDiv(373, iDpi, 96);
-	int dpiScaledY = MulDiv(340, iDpi, 96);
+	int dpiScaledX = MulDiv(ButtonX, iDpi, 96);
+	int dpiScaledY = MulDiv(ButtonY, iDpi, 96);
 	int dpiScaledWidth = MulDiv(70, iDpi, 96);
 	int dpiScaledHeight = MulDiv(23, iDpi, 96);
 	SetWindowPos(hWnd, hWnd, dpiScaledX, dpiScaledY, dpiScaledWidth, dpiScaledHeight, SWP_NOZORDER | SWP_NOACTIVATE);
@@ -237,7 +254,7 @@ void UpdateEulaLayoutForDpi(HWND hWnd)
 {
 	int iDpi = ::GetDpiForWindow(hWnd);
 	int dpiScaledX = MulDiv(47, iDpi, 96);
-	int dpiScaledY = MulDiv(249, iDpi, 96);
+	int dpiScaledY = MulDiv(EulaY, iDpi, 96);
 	int dpiScaledWidth = MulDiv(345, iDpi, 96);
 	int dpiScaledHeight = MulDiv(40, iDpi, 96);
 	SetWindowPos(hWnd, hWnd, dpiScaledX, dpiScaledY, dpiScaledWidth, dpiScaledHeight, SWP_NOZORDER | SWP_NOACTIVATE);
@@ -268,7 +285,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				SWP_NOACTIVATE | SWP_NOZORDER);
 			UpdateButtonLayoutForDpi(button);
 			UpdateEulaLayoutForDpi(yes);
-			FixFontForButton(hWnd);
+			FixFontForEula(hWnd);
 		}
 		case WM_COMMAND:
 		{
@@ -277,6 +294,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	            HWND hwndBtn = (HWND)lParam;
 				if (hwndBtn == button)
 					PostQuitMessage(0);
+			}
+			if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
+			{
+				PostQuitMessage(0);
 			}
 			break;	
 		}
