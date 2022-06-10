@@ -131,8 +131,6 @@ void DoStuff(HINSTANCE hInst)
 {
     HKEY hKey;
 	wchar_t version[MAX_LOADSTRING];
-	wchar_t versionstr[MAX_LOADSTRING];
-	wchar_t buildstr[MAX_LOADSTRING];
     DWORD UBR{};
 	DWORD type = REG_SZ, size = MAX_LOADSTRING;
 	RegOpenKey(HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Windows NT\\CurrentVersion", &hKey);
@@ -147,20 +145,18 @@ void DoStuff(HINSTANCE hInst)
 		RegCloseKey(hKey);
 	}
     RtlGetVersion(&os);
-	LoadStringW(hInst, IDS_TEXT_VERSION, versionstr, MAX_LOADSTRING);
-	LoadStringW(hInst, IDS_TEXT_BUILD, buildstr, MAX_LOADSTRING);
-    std::ostringstream ver;
-	_bstr_t verstr2(versionstr);
-    ver << verstr2;
+    std::wostringstream ver;
+	CString versionstr(MAKEINTRESOURCE(IDS_TEXT_VERSION));
+	CString buildstr(MAKEINTRESOURCE(IDS_TEXT_BUILD));
+    ver << CT2A(versionstr);
 	_bstr_t verstr(version);
-    ver << verstr;
-	_bstr_t buildstr2(buildstr);
-    ver << buildstr2;
+    ver << version;
+    ver << CT2A(buildstr);
     ver << os.dwBuildNumber;
-    ver << ".";
+    ver << L".";
     ver << UBR;
-    ver << ")";
-    Version = convertCharArrayToLPCWSTR(ver.str().c_str());
+    ver << L")";
+    Version = ver.str();
 }
 
 Gdiplus::Bitmap* LoadImageFromResource(HMODULE hMod, const wchar_t* resid, const wchar_t* restype)
@@ -273,30 +269,29 @@ int currentMonitorDpi;
 PointF FixedPointF(PointF o)
 {
 	int iDpi = currentMonitorDpi;
-	REAL X = MulDiv(o.X, iDpi, 96);
-	REAL Y = MulDiv(o.Y, iDpi, 96);
+	REAL X = MulDiv(o.X, iDpi, primaryMonitorDpi);
+	REAL Y = MulDiv(o.Y, iDpi, primaryMonitorDpi);
 	return PointF(X, Y);
 }
 RectF FixedRectF(RectF o)
 {
 	int iDpi = currentMonitorDpi;
-	REAL X = MulDiv(o.X, iDpi, 96);
-	REAL Y = MulDiv(o.Y, iDpi, 96);
-	REAL width = MulDiv(o.Width, iDpi, 96);
-	REAL height = MulDiv(o.Height, iDpi, 96);
+	REAL X = MulDiv(o.X, iDpi, primaryMonitorDpi);
+	REAL Y = MulDiv(o.Y, iDpi, primaryMonitorDpi);
+	REAL width = MulDiv(o.Width, iDpi, primaryMonitorDpi);
+	REAL height = MulDiv(o.Height, iDpi, primaryMonitorDpi);
 	return RectF(X, Y, width, height);
 }
 BOOLEAN DrawStrings(HWND hWnd, Graphics& graphics, HINSTANCE hInst)
 {
 	SolidBrush      lightmodetext(Gdiplus::Color(255, 0, 0, 0));
 	SolidBrush      darkmodetext(Gdiplus::Color(255, 255, 255, 255));
-	int primaryMonitorDpi = GetDpiForWindow(::GetDesktopWindow());
 	currentMonitorDpi = ::GetDpiForWindow(hWnd);
-	Gdiplus::REAL emSize = 9.0 * currentMonitorDpi / primaryMonitorDpi;
+	Gdiplus::REAL emSize = MulDiv(9.0, currentMonitorDpi, primaryMonitorDpi);
 	FontFamily      fontFamily(L"Segoe UI Variable Small");
 	Gdiplus::Font   font(&fontFamily, emSize);
 	graphics.DrawString(MsWin, -1, &font, FixedPointF(PointF(45, 110)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-	graphics.DrawString(Version, -1, &font, FixedPointF(PointF(45, 128)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	graphics.DrawString(Version.c_str(), -1, &font, FixedPointF(PointF(45, 128)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
 	graphics.DrawString(CopyRight, -1, &font, FixedPointF(PointF(45, 146)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
 	RectF        rectF(45, 170, CopyWidth, 80);
 	graphics.DrawString(AboutWin, -1, &font, FixedRectF(rectF), NULL, DarkThemeEnabled ? &darkmodetext : &lightmodetext);
@@ -314,8 +309,8 @@ BOOLEAN DrawStrings(HWND hWnd, Graphics& graphics, HINSTANCE hInst)
 }
 void FixFontForEula(HWND hWnd)
 {
-	int pointSize = 9;
-	int height = -MulDiv(pointSize, ::GetDpiForWindow(hWnd), 72);
+	int pointSize = 16;
+	int height = MulDiv(pointSize, ::GetDpiForWindow(hWnd), primaryMonitorDpi);
 	HFONT hFont = CreateFont(height, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Segoe UI Variable Small");
 	SendMessage(yes, WM_SETFONT, (LPARAM)hFont, true);
 }

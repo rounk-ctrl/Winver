@@ -14,6 +14,8 @@
 #include <comdef.h>
 #include <dwmapi.h>
 #include <Uxtheme.h>
+#include <io.h>
+#include <fcntl.h>
 #include <assert.h>
 #include <shellscalingapi.h>
 #include <gdiplus.h>

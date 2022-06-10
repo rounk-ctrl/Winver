@@ -10,7 +10,7 @@ extern LPCTSTR okef;
 extern HKEY hKeyPersonalization;
 extern LPCWSTR MsWin;
 extern LPCWSTR AboutWin;
-extern LPCWSTR Version;
+extern std::wstring Version;
 extern LPCWSTR CopyRight;
 extern LPCWSTR Owner;
 extern OSVERSIONINFOEX os;
@@ -21,6 +21,7 @@ extern HWND button;
 extern int CopyWidth;
 extern int OwnerY;
 extern int OrganizationY;
+extern int primaryMonitorDpi;
 
 enum IMMERSIVE_HC_CACHE_MODE
 {

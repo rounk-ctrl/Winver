@@ -14,7 +14,6 @@ enum class SystemBackdropType
 	Acrylic,
 	Tabbed
 };
-
 typedef void (WINAPI* RtlGetVersion_FUNC) (OSVERSIONINFOEXW*);
 
 wchar_t* convertCharArrayToLPCWSTR(const char* charArray);

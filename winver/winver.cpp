@@ -24,23 +24,25 @@ LPCTSTR okef;
 HKEY hKeyPersonalization;
 LPCWSTR MsWin;
 LPCWSTR AboutWin;
-LPCWSTR Version;
+std::wstring Version;
 LPCWSTR CopyRight;
 LPCWSTR Owner;
 LPCWSTR Organization;
 int DarkThemeEnabled;
 HWND yes;
 HWND button;
+int primaryMonitorDpi = GetDpiForWindow(::GetDesktopWindow());
 
 // window size
-int Window_Width = 455;
-int Window_Height = 375;
-int EulaY = 249;
-int CopyWidth = 385;
-int OwnerY = 285;
-int OrganizationY = 303;
-int ButtonX = 373;
-int ButtonY = 340;
+int Window_Width;
+int Window_Height;
+int EulaY;
+int CopyWidth;
+int OwnerY;
+int OrganizationY;
+int ButtonX;
+int ButtonY;
+int EulaHeight;
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -114,20 +116,64 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     assert(st == Ok);
     if (st != Ok) return FALSE;
 
-    // Initialize global strings
+	// load strings
+	LANGID lang = GetUserDefaultUILanguage();
+	if (lang == LANG_GERMAN)
+	{
+		SetThreadUILanguage(LANG_GERMAN);
+	}
+	else if (lang == LANG_POLISH)
+	{
+		SetThreadUILanguage(LANG_POLISH);
+	}
+	else if (lang == LANG_GREEK)
+	{
+		SetThreadUILanguage(LANG_GREEK);
+	}
 
-	SetThreadUILanguage(LANG_POLISH);
-	Window_Width = 465;
-	Window_Height = 400;
-	EulaY = 266;
-	CopyWidth = 400;
-	OwnerY = 305;
-	OrganizationY = 323;
-	ButtonX = 382;
-	ButtonY = 363;
+	LPWSTR *lpszArgv;
+	int nArgc{};
+	lpszArgv = CommandLineToArgvW(GetCommandLineW(), &nArgc);
+	for (int i = 0; i < nArgc; i++)
+	{
+		if (!wcscmp(lpszArgv[i], L"/lang"))
+		{
+			int ok = i + 1;
+			if (!wcscmp(lpszArgv[ok], L"pl"))
+			{
+				SetThreadUILanguage(LANG_POLISH);
+			}
+			else if (!wcscmp(lpszArgv[ok], L"de"))
+			{
+				SetThreadUILanguage(LANG_GERMAN);
+			}
+			else if (!wcscmp(lpszArgv[ok], L"gr"))
+			{
+				SetThreadUILanguage(LANG_GREEK);
+			}
+			else if (!wcscmp(lpszArgv[ok], L"en"))
+			{
+				SetThreadUILanguage(LANG_ENGLISH);
+			}
+		}
+	}
+	// set window positions
+	Window_Width = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDW_WIDTH)))));
+	Window_Height = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDW_HEIGHT)))));
+	EulaY = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDE_Y)))));
+	CopyWidth = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDC_W)))));
+	OwnerY = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDO_Y)))));
+	OrganizationY = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDOR_Y)))));
+	ButtonX = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDB_X)))));
+	ButtonY = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDB_Y)))));
+	EulaHeight = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDE_H)))));
+
+	// title
 	CString wintitle(MAKEINTRESOURCE(IDS_APP_TITLE));
 	title = wintitle;
     LoadStringW(hInstance, IDC_WINVER, szWindowClass, MAX_LOADSTRING);
+
+	// registers class
     MyRegisterClass(hInstance);
 
     if (!GetwinBrandName())
@@ -226,7 +272,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	}
 
 	UINT dpi = GetDpiForWindow(hWnd);
-	float scaling_factor = static_cast<float>(dpi) / 96;
+	float scaling_factor = static_cast<float>(dpi) / primaryMonitorDpi;
 	RECT scaled_size;
 	scaled_size.left = 0;
 	scaled_size.top = 0;
@@ -244,19 +290,19 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 void UpdateButtonLayoutForDpi(HWND hWnd)
 {
 	int iDpi = ::GetDpiForWindow(hWnd);
-	int dpiScaledX = MulDiv(ButtonX, iDpi, 96);
-	int dpiScaledY = MulDiv(ButtonY, iDpi, 96);
-	int dpiScaledWidth = MulDiv(70, iDpi, 96);
-	int dpiScaledHeight = MulDiv(23, iDpi, 96);
+	int dpiScaledX = MulDiv(ButtonX, iDpi, primaryMonitorDpi);
+	int dpiScaledY = MulDiv(ButtonY, iDpi, primaryMonitorDpi);
+	int dpiScaledWidth = MulDiv(70, iDpi, primaryMonitorDpi);
+	int dpiScaledHeight = MulDiv(23, iDpi, primaryMonitorDpi);
 	SetWindowPos(hWnd, hWnd, dpiScaledX, dpiScaledY, dpiScaledWidth, dpiScaledHeight, SWP_NOZORDER | SWP_NOACTIVATE);
 }
 void UpdateEulaLayoutForDpi(HWND hWnd)
 {
 	int iDpi = ::GetDpiForWindow(hWnd);
-	int dpiScaledX = MulDiv(47, iDpi, 96);
-	int dpiScaledY = MulDiv(EulaY, iDpi, 96);
-	int dpiScaledWidth = MulDiv(345, iDpi, 96);
-	int dpiScaledHeight = MulDiv(40, iDpi, 96);
+	int dpiScaledX = MulDiv(47, iDpi, primaryMonitorDpi);
+	int dpiScaledY = MulDiv(EulaY, iDpi, primaryMonitorDpi);
+	int dpiScaledWidth = MulDiv(345, iDpi, primaryMonitorDpi);
+	int dpiScaledHeight = MulDiv(EulaHeight, iDpi, primaryMonitorDpi);
 	SetWindowPos(hWnd, hWnd, dpiScaledX, dpiScaledY, dpiScaledWidth, dpiScaledHeight, SWP_NOZORDER | SWP_NOACTIVATE);
 }
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)

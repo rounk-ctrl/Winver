@@ -15,7 +15,16 @@
 #define IDI_R11ICO                      107
 #define IDS_TEXT_BUILD                  107
 #define IDI_SMALL                       108
+#define IDW_WIDTH                       108
 #define IDC_WINVER                      109
+#define IDW_HEIGHT                      110
+#define IDE_Y                           111
+#define IDC_W                           112
+#define IDO_Y                           113
+#define IDOR_Y                          114
+#define IDB_X                           115
+#define IDB_Y                           116
+#define IDE_H                           117
 #define IDR_MAINFRAME                   128
 #define IDB_PNG1                        131
 #define IDB_PNG2                        134
