@@ -148,10 +148,10 @@ void DoStuff(HINSTANCE hInst)
     std::wostringstream ver;
 	CString versionstr(MAKEINTRESOURCE(IDS_TEXT_VERSION));
 	CString buildstr(MAKEINTRESOURCE(IDS_TEXT_BUILD));
-    ver << CT2A(versionstr);
+    ver << (LPCWSTR)versionstr;
 	_bstr_t verstr(version);
     ver << version;
-    ver << CT2A(buildstr);
+    ver << (LPCWSTR)buildstr;
     ver << os.dwBuildNumber;
     ver << L".";
     ver << UBR;
