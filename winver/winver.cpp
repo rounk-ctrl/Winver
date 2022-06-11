@@ -31,7 +31,6 @@ LPCWSTR Organization;
 int DarkThemeEnabled;
 HWND yes;
 HWND button;
-int primaryMonitorDpi = GetDpiForWindow(::GetDesktopWindow());
 
 // window size
 int Window_Width;
@@ -42,7 +41,8 @@ int OwnerY;
 int OrganizationY;
 int ButtonX;
 int ButtonY;
-int EulaHeight;
+int EulaWidth;
+int BitmapX;
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -102,10 +102,20 @@ BOOL FillRichEditFromFile(HWND hwnd, LPCTSTR pszFile)
 	}
 	return fSuccess;
 }
-int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-                     _In_opt_ HINSTANCE hPrevInstance,
-                     _In_ LPWSTR    lpCmdLine,
-                     _In_ int       nCmdShow)
+void UpdatePositions()
+{
+	Window_Width = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDW_WIDTH)))));
+	Window_Height = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDW_HEIGHT)))));
+	EulaY = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDE_Y)))));
+	CopyWidth = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDC_W)))));
+	OwnerY = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDO_Y)))));
+	OrganizationY = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDOR_Y)))));
+	ButtonX = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDB_X)))));
+	ButtonY = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDB_Y)))));
+	EulaWidth = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDE_W)))));
+	BitmapX = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDBI_X)))));
+}
+int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
@@ -117,56 +127,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     if (st != Ok) return FALSE;
 
 	// load strings
-	LANGID lang = GetUserDefaultUILanguage();
-	if (lang == LANG_GERMAN)
-	{
-		SetThreadUILanguage(LANG_GERMAN);
-	}
-	else if (lang == LANG_POLISH)
-	{
-		SetThreadUILanguage(LANG_POLISH);
-	}
-	else if (lang == LANG_GREEK)
-	{
-		SetThreadUILanguage(LANG_GREEK);
-	}
-
-	LPWSTR *lpszArgv;
-	int nArgc{};
-	lpszArgv = CommandLineToArgvW(GetCommandLineW(), &nArgc);
-	for (int i = 0; i < nArgc; i++)
-	{
-		if (!wcscmp(lpszArgv[i], L"/lang"))
-		{
-			int ok = i + 1;
-			if (!wcscmp(lpszArgv[ok], L"pl"))
-			{
-				SetThreadUILanguage(LANG_POLISH);
-			}
-			else if (!wcscmp(lpszArgv[ok], L"de"))
-			{
-				SetThreadUILanguage(LANG_GERMAN);
-			}
-			else if (!wcscmp(lpszArgv[ok], L"gr"))
-			{
-				SetThreadUILanguage(LANG_GREEK);
-			}
-			else if (!wcscmp(lpszArgv[ok], L"en"))
-			{
-				SetThreadUILanguage(LANG_ENGLISH);
-			}
-		}
-	}
+	SetThreadUILanguage(GetUserDefaultUILanguage());
 	// set window positions
-	Window_Width = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDW_WIDTH)))));
-	Window_Height = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDW_HEIGHT)))));
-	EulaY = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDE_Y)))));
-	CopyWidth = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDC_W)))));
-	OwnerY = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDO_Y)))));
-	OrganizationY = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDOR_Y)))));
-	ButtonX = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDB_X)))));
-	ButtonY = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDB_Y)))));
-	EulaHeight = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDE_H)))));
+	UpdatePositions();
 
 	// title
 	CString wintitle(MAKEINTRESOURCE(IDS_APP_TITLE));
@@ -210,18 +173,20 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	}
 
 	LoadLibraryExW(L"Msftedit.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
-
+	HACCEL hAccel = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_ACCL));
 	MSG msg;
 	// Main message loop:
 	while (GetMessage(&msg, nullptr, 0, 0))
 	{
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
+		if (!TranslateAccelerator(hWnd, hAccel, &msg))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
 	}
 	GdiplusShutdown(gdiplusToken);
 	return (int)msg.wParam;
 }
-
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {
     WNDCLASSEXW wcex;
@@ -247,7 +212,6 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 
     return RegisterClassExW(&wcex);
 }
-
 HMODULE hUxtheme = LoadLibraryExW(L"uxtheme.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
@@ -272,7 +236,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	}
 
 	UINT dpi = GetDpiForWindow(hWnd);
-	float scaling_factor = static_cast<float>(dpi) / primaryMonitorDpi;
+	float scaling_factor = static_cast<float>(dpi) / 96;
 	RECT scaled_size;
 	scaled_size.left = 0;
 	scaled_size.top = 0;
@@ -290,19 +254,19 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 void UpdateButtonLayoutForDpi(HWND hWnd)
 {
 	int iDpi = ::GetDpiForWindow(hWnd);
-	int dpiScaledX = MulDiv(ButtonX, iDpi, primaryMonitorDpi);
-	int dpiScaledY = MulDiv(ButtonY, iDpi, primaryMonitorDpi);
-	int dpiScaledWidth = MulDiv(70, iDpi, primaryMonitorDpi);
-	int dpiScaledHeight = MulDiv(23, iDpi, primaryMonitorDpi);
+	int dpiScaledX = MulDiv(ButtonX, iDpi, 96);
+	int dpiScaledY = MulDiv(ButtonY, iDpi, 96);
+	int dpiScaledWidth = MulDiv(70, iDpi, 96);
+	int dpiScaledHeight = MulDiv(23, iDpi, 96);
 	SetWindowPos(hWnd, hWnd, dpiScaledX, dpiScaledY, dpiScaledWidth, dpiScaledHeight, SWP_NOZORDER | SWP_NOACTIVATE);
 }
 void UpdateEulaLayoutForDpi(HWND hWnd)
 {
 	int iDpi = ::GetDpiForWindow(hWnd);
-	int dpiScaledX = MulDiv(47, iDpi, primaryMonitorDpi);
-	int dpiScaledY = MulDiv(EulaY, iDpi, primaryMonitorDpi);
-	int dpiScaledWidth = MulDiv(345, iDpi, primaryMonitorDpi);
-	int dpiScaledHeight = MulDiv(EulaHeight, iDpi, primaryMonitorDpi);
+	int dpiScaledX = MulDiv(47, iDpi, 96);
+	int dpiScaledY = MulDiv(EulaY, iDpi, 96);
+	int dpiScaledWidth = MulDiv(EulaWidth, iDpi, 96);
+	int dpiScaledHeight = MulDiv(40, iDpi, 96);
 	SetWindowPos(hWnd, hWnd, dpiScaledX, dpiScaledY, dpiScaledWidth, dpiScaledHeight, SWP_NOZORDER | SWP_NOACTIVATE);
 }
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -341,11 +305,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				if (hwndBtn == button)
 					PostQuitMessage(0);
 			}
-			if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
+			if ((LOWORD(wParam) == ID_RETURN) || (LOWORD(wParam) == ID_ESC))
 			{
 				PostQuitMessage(0);
 			}
-			break;	
+			break;
 		}
 		case WM_NOTIFY:
 		switch (((LPNMHDR)lParam)->code)
@@ -407,6 +371,10 @@ INT_PTR CALLBACK EulaProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	UNREFERENCED_PARAMETER(lParam);
 	switch (message)
 	{
+		case WM_INITDIALOG:
+		{
+			FillRichEditFromFile(GetDlgItem(hDlg, IDC_RICHEDIT21), L"C:\\Users\\Rounak\\Desktop\\Document.rtf");
+		}
 		case WM_COMMAND:
 			if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
 			{

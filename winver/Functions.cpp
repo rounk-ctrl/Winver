@@ -1,5 +1,7 @@
 #include "Functions.h"
 using namespace Gdiplus;
+int currentMonitorDpi;
+int primaryMonitorDpi = 96;
 
 wchar_t* convertCharArrayToLPCWSTR(const char* charArray)
 {
@@ -265,41 +267,41 @@ BOOL DarkTitleBar(HWND hWnd)
 	return FALSE;
 }
 
-int currentMonitorDpi;
 PointF FixedPointF(PointF o)
 {
 	int iDpi = currentMonitorDpi;
-	REAL X = MulDiv(o.X, iDpi, primaryMonitorDpi);
-	REAL Y = MulDiv(o.Y, iDpi, primaryMonitorDpi);
+	REAL X = MulDiv(o.X, iDpi, 96);
+	REAL Y = MulDiv(o.Y, iDpi, 96);
 	return PointF(X, Y);
 }
 RectF FixedRectF(RectF o)
 {
 	int iDpi = currentMonitorDpi;
-	REAL X = MulDiv(o.X, iDpi, primaryMonitorDpi);
-	REAL Y = MulDiv(o.Y, iDpi, primaryMonitorDpi);
-	REAL width = MulDiv(o.Width, iDpi, primaryMonitorDpi);
-	REAL height = MulDiv(o.Height, iDpi, primaryMonitorDpi);
+	REAL X = MulDiv(o.X, iDpi, 96);
+	REAL Y = MulDiv(o.Y, iDpi, 96);
+	REAL width = MulDiv(o.Width, iDpi, 96);
+	REAL height = MulDiv(o.Height, iDpi, 96);
 	return RectF(X, Y, width, height);
 }
 BOOLEAN DrawStrings(HWND hWnd, Graphics& graphics, HINSTANCE hInst)
 {
 	SolidBrush      lightmodetext(Gdiplus::Color(255, 0, 0, 0));
 	SolidBrush      darkmodetext(Gdiplus::Color(255, 255, 255, 255));
+	int primaryMonitorDpi = GetDpiForWindow(::GetDesktopWindow());
 	currentMonitorDpi = ::GetDpiForWindow(hWnd);
-	Gdiplus::REAL emSize = MulDiv(9.0, currentMonitorDpi, primaryMonitorDpi);
+	Gdiplus::REAL emSize = 9.0 * currentMonitorDpi / primaryMonitorDpi;
 	FontFamily      fontFamily(L"Segoe UI Variable Small");
 	Gdiplus::Font   font(&fontFamily, emSize);
 	graphics.DrawString(MsWin, -1, &font, FixedPointF(PointF(45, 110)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
 	graphics.DrawString(Version.c_str(), -1, &font, FixedPointF(PointF(45, 128)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
 	graphics.DrawString(CopyRight, -1, &font, FixedPointF(PointF(45, 146)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-	RectF        rectF(45, 170, CopyWidth, 80);
+	RectF        rectF(45, 175, CopyWidth, 80);
 	graphics.DrawString(AboutWin, -1, &font, FixedRectF(rectF), NULL, DarkThemeEnabled ? &darkmodetext : &lightmodetext);
 #if BUILD_R11
 	RectF        imgrectF(65, 10, 305, 90);
 	Gdiplus::Bitmap* pBmp = LoadImageFromResource(hInst, MAKEINTRESOURCE(IDB_R11), L"PNG");
 #else
-	RectF        imgrectF(-25, 10, 485, 77);
+	RectF        imgrectF(BitmapX, 10, 485, 77);
 	Gdiplus::Bitmap* pBmp = LoadImageFromResource(hInst, MAKEINTRESOURCE(IDB_STOCK), L"PNG");
 #endif
 	graphics.DrawImage(pBmp, FixedRectF(imgrectF));
@@ -307,13 +309,15 @@ BOOLEAN DrawStrings(HWND hWnd, Graphics& graphics, HINSTANCE hInst)
 	graphics.DrawString(Organization, -1, &font, FixedPointF(PointF(60, OrganizationY)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
 	return TRUE;
 }
+
 void FixFontForEula(HWND hWnd)
 {
 	int pointSize = 16;
-	int height = MulDiv(pointSize, ::GetDpiForWindow(hWnd), primaryMonitorDpi);
+	int height = MulDiv(pointSize, ::GetDpiForWindow(hWnd), 96);
 	HFONT hFont = CreateFont(height, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Segoe UI Variable Small");
 	SendMessage(yes, WM_SETFONT, (LPARAM)hFont, true);
 }
+
 BOOLEAN CreateHwnds(HWND hWnd, HINSTANCE hInst)
 {
 	button = CreateWindow(L"Button", L"OK", WS_CHILD | WS_TABSTOP | WS_VISIBLE | BS_FLAT | BS_DEFPUSHBUTTON, 0, 0, 0, 0, hWnd, NULL, hInst, NULL);

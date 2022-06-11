@@ -21,7 +21,7 @@ extern HWND button;
 extern int CopyWidth;
 extern int OwnerY;
 extern int OrganizationY;
-extern int primaryMonitorDpi;
+extern int BitmapX;
 
 enum IMMERSIVE_HC_CACHE_MODE
 {
