@@ -18,7 +18,7 @@ jobs:
     runs-on: windows-latest
     env:
       SOLUTION_FILE_PATH: .
-      RELEASE_DIR: ${{ matrix.platform }}
+      RELEASE_DIR: ${{ matrix.configuration }}
       EXE_NAME: Winver-${{ matrix.platform }}.exe
       BEXE_NAME: Winver-${{ matrix.platform }}
       ARCH: ${{ matrix.platform }}
@@ -27,7 +27,7 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@v1.1
 
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
