@@ -102,18 +102,54 @@ BOOL FillRichEditFromFile(HWND hwnd, LPCTSTR pszFile)
 	}
 	return fSuccess;
 }
-void UpdatePositions()
+void SetProperWindowDimensions(LANGID yes)
 {
-	Window_Width = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDW_WIDTH)))));
-	Window_Height = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDW_HEIGHT)))));
-	EulaY = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDE_Y)))));
-	CopyWidth = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDC_W)))));
-	OwnerY = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDO_Y)))));
-	OrganizationY = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDOR_Y)))));
-	ButtonX = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDB_X)))));
-	ButtonY = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDB_Y)))));
-	EulaWidth = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDE_W)))));
-	BitmapX = std::stoi(std::string(CT2A(CString(MAKEINTRESOURCE(IDBI_X)))));
+	switch (yes)
+	{
+		case LANG_POLISH:
+		{
+			Window_Width = 495;
+			Window_Height = 410;
+			EulaY = 266;
+			CopyWidth = 420;
+			OwnerY = 305;
+			OrganizationY = 320;
+			ButtonX = 413;
+			ButtonY = 375;
+			EulaWidth = 360;
+			BitmapX = -15;
+			break;
+		}
+		case LANG_GERMAN:
+		case LANG_GREEK:
+		{
+			Window_Width = 465;
+			Window_Height = 400;
+			EulaY = 266;
+			CopyWidth = 400;
+			OwnerY = 305;
+			OrganizationY = 323;
+			ButtonX = 382;
+			ButtonY = 363;
+			EulaWidth = 345;
+			BitmapX = -20;
+			break;
+		}
+		default:
+		{
+			Window_Width = 455;
+			Window_Height = 375;
+			EulaY = 249;
+			CopyWidth = 385;
+			OwnerY = 285;
+			OrganizationY = 303;
+			ButtonX = 373;
+			ButtonY = 340;
+			EulaWidth = 345;
+			BitmapX = -25;
+			break;
+		}
+	}
 }
 int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
@@ -127,9 +163,11 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
     if (st != Ok) return FALSE;
 
 	// load strings
-	SetThreadUILanguage(GetUserDefaultUILanguage());
+	LANGID lang = GetUserDefaultUILanguage();
+	SetThreadUILanguage(lang);
 	// set window positions
-	UpdatePositions();
+	SetProperWindowDimensions(lang);
+
 
 	// title
 	CString wintitle(MAKEINTRESOURCE(IDS_APP_TITLE));
@@ -172,7 +210,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 		return FALSE;
 	}
 
-	LoadLibraryExW(L"Msftedit.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+	// LoadLibraryExW(L"Msftedit.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 	HACCEL hAccel = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_ACCL));
 	MSG msg;
 	// Main message loop:

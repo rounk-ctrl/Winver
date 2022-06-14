@@ -1,7 +1,6 @@
 #include "Functions.h"
 using namespace Gdiplus;
 int currentMonitorDpi;
-int primaryMonitorDpi = 96;
 
 wchar_t* convertCharArrayToLPCWSTR(const char* charArray)
 {
