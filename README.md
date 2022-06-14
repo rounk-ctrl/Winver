@@ -5,3 +5,8 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/rounk-ctrl/winver/badge)](https://www.codefactor.io/repository/github/rounk-ctrl/winver)
 
 win32 real
+
+### Languages added:
+ - Polish
+ - Greek
+ - German
