@@ -282,7 +282,7 @@ RectF FixedRectF(RectF o)
 	REAL height = MulDiv(o.Height, iDpi, 96);
 	return RectF(X, Y, width, height);
 }
-BOOLEAN DrawStrings(HWND hWnd, Graphics& graphics, HINSTANCE hInst)
+BOOLEAN DrawStrings(HWND hWnd, Graphics& graphics, HINSTANCE hInst, RECT rc)
 {
 	SolidBrush      lightmodetext(Gdiplus::Color(255, 0, 0, 0));
 	SolidBrush      darkmodetext(Gdiplus::Color(255, 255, 255, 255));
@@ -291,17 +291,18 @@ BOOLEAN DrawStrings(HWND hWnd, Graphics& graphics, HINSTANCE hInst)
 	Gdiplus::REAL emSize = 9.0 * currentMonitorDpi / primaryMonitorDpi;
 	FontFamily      fontFamily(L"Segoe UI Variable Small");
 	Gdiplus::Font   font(&fontFamily, emSize);
-	graphics.DrawString(MsWin, -1, &font, FixedPointF(PointF(45, 110)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-	graphics.DrawString(Version.c_str(), -1, &font, FixedPointF(PointF(45, 128)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-	graphics.DrawString(CopyRight, -1, &font, FixedPointF(PointF(45, 146)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-	RectF        rectF(45, 175, CopyWidth, 80);
+	
+	graphics.DrawString(MsWin, -1, &font, FixedPointF(PointF(45, 100)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	graphics.DrawString(Version.c_str(), -1, &font, FixedPointF(PointF(45, 118)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	graphics.DrawString(CopyRight, -1, &font, FixedPointF(PointF(45, 136)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	RectF        rectF(45, 165, CopyWidth, 80);
 	graphics.DrawString(AboutWin, -1, &font, FixedRectF(rectF), NULL, DarkThemeEnabled ? &darkmodetext : &lightmodetext);
 #if BUILD_R11
 	RectF        imgrectF(65, 10, 305, 90);
 	Gdiplus::Bitmap* pBmp = LoadImageFromResource(hInst, MAKEINTRESOURCE(IDB_R11), L"PNG");
 #else
-	RectF        imgrectF(BitmapX, 10, 485, 77);
 	Gdiplus::Bitmap* pBmp = LoadImageFromResource(hInst, MAKEINTRESOURCE(IDB_STOCK), L"PNG");
+	RectF        imgrectF(BitmapX, 15, 350, 67);
 #endif
 	graphics.DrawImage(pBmp, FixedRectF(imgrectF));
 	graphics.DrawString(Owner, -1, &font, FixedPointF(PointF(60, OwnerY)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);

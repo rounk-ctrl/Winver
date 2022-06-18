@@ -110,14 +110,14 @@ void SetProperWindowDimensions(LANGID yes)
 		{
 			Window_Width = 495;
 			Window_Height = 410;
-			EulaY = 266;
+			EulaY = 256;
 			CopyWidth = 420;
-			OwnerY = 305;
-			OrganizationY = 320;
+			OwnerY = 295;
+			OrganizationY = 313;
 			ButtonX = 413;
 			ButtonY = 375;
 			EulaWidth = 360;
-			BitmapX = -15;
+			BitmapX = 65;
 			break;
 		}
 		case LANG_GERMAN:
@@ -125,28 +125,42 @@ void SetProperWindowDimensions(LANGID yes)
 		{
 			Window_Width = 465;
 			Window_Height = 400;
-			EulaY = 266;
+			EulaY = 256;
 			CopyWidth = 400;
-			OwnerY = 305;
-			OrganizationY = 323;
+			OwnerY = 295;
+			OrganizationY = 313;
 			ButtonX = 382;
 			ButtonY = 363;
 			EulaWidth = 345;
-			BitmapX = -20;
+			BitmapX = 60;
+			break;
+		}
+		case LANG_VIETNAMESE:
+		{
+			Window_Width = 475;
+			Window_Height = 385;
+			EulaY = 245;
+			CopyWidth = 405;
+			OwnerY = 285;
+			OrganizationY = 303;
+			ButtonX = 393;
+			ButtonY = 350;
+			EulaWidth = 345;
+			BitmapX = 60;
 			break;
 		}
 		default:
 		{
 			Window_Width = 455;
-			Window_Height = 375;
-			EulaY = 249;
+			Window_Height = 380;
+			EulaY = 243;
 			CopyWidth = 385;
-			OwnerY = 285;
-			OrganizationY = 303;
+			OwnerY = 279;
+			OrganizationY = 297;
 			ButtonX = 373;
-			ButtonY = 340;
+			ButtonY = 345;
 			EulaWidth = 345;
-			BitmapX = -25;
+			BitmapX = 55;
 			break;
 		}
 	}
@@ -163,7 +177,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
     if (st != Ok) return FALSE;
 
 	// load strings
-	LANGID lang = GetUserDefaultUILanguage();
+	LANGID lang = LANG_POLISH;
 	SetThreadUILanguage(lang);
 	// set window positions
 	SetProperWindowDimensions(lang);
@@ -392,7 +406,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			FillRect(hdc, &rc, (HBRUSH)GetStockObject(DC_BRUSH));
 
 	        Gdiplus::Graphics graphics(hdc);
-			DrawStrings(hWnd, graphics, hInst);
+			DrawStrings(hWnd, graphics, hInst, rc);
 			EndPaint(hWnd, &ps);
 			break;
 		}
