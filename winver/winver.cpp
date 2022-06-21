@@ -28,6 +28,7 @@ std::wstring Version;
 LPCWSTR CopyRight;
 LPCWSTR Owner;
 LPCWSTR Organization;
+LPCWSTR OkButton;
 int DarkThemeEnabled;
 HWND yes;
 HWND button;
@@ -63,7 +64,6 @@ BOOL GetwinBrandName()
         {
             CString lpct(MAKEINTRESOURCE(IDS_TEXT_COPY));
             AboutWin = getwinName(lpct);
-            BRet = TRUE;
 
             const wchar_t copy[50] = L"%WINDOWS_COPYRIGHT%";
             CopyRight = getwinName(copy);
@@ -112,8 +112,8 @@ void SetProperWindowDimensions(LANGID yes)
 			Window_Height = 410;
 			EulaY = 256;
 			CopyWidth = 420;
-			OwnerY = 295;
-			OrganizationY = 313;
+			OwnerY = 293;
+			OrganizationY = 310;
 			ButtonX = 413;
 			ButtonY = 375;
 			EulaWidth = 360;
@@ -127,8 +127,8 @@ void SetProperWindowDimensions(LANGID yes)
 			Window_Height = 400;
 			EulaY = 256;
 			CopyWidth = 400;
-			OwnerY = 295;
-			OrganizationY = 313;
+			OwnerY = 293;
+			OrganizationY = 310;
 			ButtonX = 382;
 			ButtonY = 363;
 			EulaWidth = 345;
@@ -141,12 +141,26 @@ void SetProperWindowDimensions(LANGID yes)
 			Window_Height = 385;
 			EulaY = 245;
 			CopyWidth = 405;
-			OwnerY = 285;
-			OrganizationY = 303;
+			OwnerY = 283;
+			OrganizationY = 300;
 			ButtonX = 393;
 			ButtonY = 350;
 			EulaWidth = 345;
 			BitmapX = 60;
+			break;
+		}
+		case LANG_CHINESE_SIMPLIFIED:
+		{
+			Window_Width = 467;
+			Window_Height = 385;
+			EulaY = 243;
+			CopyWidth = 385;
+			OwnerY = 279;
+			OrganizationY = 297;
+			ButtonX = 386;
+			ButtonY = 349;
+			EulaWidth = 345;
+			BitmapX = 55;
 			break;
 		}
 		default:
@@ -177,11 +191,10 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
     if (st != Ok) return FALSE;
 
 	// load strings
-	LANGID lang = LANG_POLISH;
+	LANGID lang = GetUserDefaultUILanguage();
 	SetThreadUILanguage(lang);
 	// set window positions
 	SetProperWindowDimensions(lang);
-
 
 	// title
 	CString wintitle(MAKEINTRESOURCE(IDS_APP_TITLE));

@@ -13,6 +13,7 @@ extern LPCWSTR AboutWin;
 extern std::wstring Version;
 extern LPCWSTR CopyRight;
 extern LPCWSTR Owner;
+extern LPCWSTR OkButton;
 extern OSVERSIONINFOEX os;
 extern LPCWSTR Organization;
 extern int DarkThemeEnabled;

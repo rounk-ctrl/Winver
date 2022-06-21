@@ -125,6 +125,8 @@ void DoStuffv2()
 		}
 
 		RegCloseKey(hKey);
+		CString buttontxt(MAKEINTRESOURCE(IDS_BUTTON));
+		OkButton = buttontxt;
 	}
 }
 
@@ -320,7 +322,7 @@ void FixFontForEula(HWND hWnd)
 
 BOOLEAN CreateHwnds(HWND hWnd, HINSTANCE hInst)
 {
-	button = CreateWindow(L"Button", L"OK", WS_CHILD | WS_TABSTOP | WS_VISIBLE | BS_FLAT | BS_DEFPUSHBUTTON, 0, 0, 0, 0, hWnd, NULL, hInst, NULL);
+	button = CreateWindow(L"Button", OkButton, WS_CHILD | WS_TABSTOP | WS_VISIBLE | BS_FLAT | BS_DEFPUSHBUTTON, 0, 0, 0, 0, hWnd, NULL, hInst, NULL);
 	SetWindowTheme(button, L"Explorer", nullptr);
 	SendMessage(button, WM_SETFONT, (LPARAM)GetStockObject(DEFAULT_GUI_FONT), true);
 	SendMessageW(button, WM_THEMECHANGED, 0, 0);
