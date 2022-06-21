@@ -191,7 +191,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
     if (st != Ok) return FALSE;
 
 	// load strings
-	LANGID lang = LANG_ITALIAN;
+	LANGID lang = GetUserDefaultUILanguage();
 	SetThreadUILanguage(lang);
 	// set window positions
 	SetProperWindowDimensions(lang);
