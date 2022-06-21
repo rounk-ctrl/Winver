@@ -12,3 +12,4 @@ win32 real
  - German
  - Vietnamese
  - Chinese simplified
+ - Italian
