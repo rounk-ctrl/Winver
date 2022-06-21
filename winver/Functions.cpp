@@ -125,8 +125,6 @@ void DoStuffv2()
 		}
 
 		RegCloseKey(hKey);
-		CString buttontxt(MAKEINTRESOURCE(IDS_BUTTON));
-		OkButton = buttontxt;
 	}
 }
 
@@ -296,9 +294,10 @@ BOOLEAN DrawStrings(HWND hWnd, Graphics& graphics, HINSTANCE hInst, RECT rc)
 	
 	graphics.DrawString(MsWin, -1, &font, FixedPointF(PointF(45, 100)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
 	graphics.DrawString(Version.c_str(), -1, &font, FixedPointF(PointF(45, 118)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-	graphics.DrawString(CopyRight, -1, &font, FixedPointF(PointF(45, 136)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-	RectF        rectF(45, 165, CopyWidth, 80);
-	graphics.DrawString(AboutWin, -1, &font, FixedRectF(rectF), NULL, DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	graphics.DrawString(CopyRight, -1, &font, FixedRectF(RectF(45, 136, 385, 40)), NULL, DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	graphics.DrawString(AboutWin, -1, &font, FixedRectF(RectF(45, CopyY, CopyWidth, 80)), NULL, DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	graphics.DrawString(Owner, -1, &font, FixedPointF(PointF(60, OwnerY)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	graphics.DrawString(Organization, -1, &font, FixedPointF(PointF(60, OrganizationY)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
 #if BUILD_R11
 	RectF        imgrectF(65, 10, 305, 90);
 	Gdiplus::Bitmap* pBmp = LoadImageFromResource(hInst, MAKEINTRESOURCE(IDB_R11), L"PNG");
@@ -307,8 +306,6 @@ BOOLEAN DrawStrings(HWND hWnd, Graphics& graphics, HINSTANCE hInst, RECT rc)
 	RectF        imgrectF(BitmapX, 15, 350, 67);
 #endif
 	graphics.DrawImage(pBmp, FixedRectF(imgrectF));
-	graphics.DrawString(Owner, -1, &font, FixedPointF(PointF(60, OwnerY)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-	graphics.DrawString(Organization, -1, &font, FixedPointF(PointF(60, OrganizationY)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
 	return TRUE;
 }
 

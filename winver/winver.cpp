@@ -1,4 +1,4 @@
-// winver.cpp : Defines the entry point for the application.
+﻿// winver.cpp : Defines the entry point for the application.
 //
 
 #include "framework.h"
@@ -38,6 +38,7 @@ int Window_Width;
 int Window_Height;
 int EulaY;
 int CopyWidth;
+int CopyY;
 int OwnerY;
 int OrganizationY;
 int ButtonX;
@@ -118,6 +119,7 @@ void SetProperWindowDimensions(LANGID yes)
 			ButtonY = 375;
 			EulaWidth = 360;
 			BitmapX = 65;
+			CopyY = 165;
 			break;
 		}
 		case LANG_GERMAN:
@@ -127,6 +129,7 @@ void SetProperWindowDimensions(LANGID yes)
 			Window_Height = 400;
 			EulaY = 256;
 			CopyWidth = 400;
+			CopyY = 165;
 			OwnerY = 293;
 			OrganizationY = 310;
 			ButtonX = 382;
@@ -141,6 +144,7 @@ void SetProperWindowDimensions(LANGID yes)
 			Window_Height = 385;
 			EulaY = 245;
 			CopyWidth = 405;
+			CopyY = 165;
 			OwnerY = 283;
 			OrganizationY = 300;
 			ButtonX = 393;
@@ -155,6 +159,7 @@ void SetProperWindowDimensions(LANGID yes)
 			Window_Height = 385;
 			EulaY = 243;
 			CopyWidth = 385;
+			CopyY = 165;
 			OwnerY = 279;
 			OrganizationY = 297;
 			ButtonX = 386;
@@ -163,12 +168,28 @@ void SetProperWindowDimensions(LANGID yes)
 			BitmapX = 55;
 			break;
 		}
+		case LANG_RUSSIAN:
+		{
+			Window_Width = 475;
+			Window_Height = 420;
+			EulaY = 280;
+			CopyWidth = 385;
+			CopyY = 180;
+			OwnerY = 320;
+			OrganizationY = 338;
+			ButtonX = 393;
+			ButtonY = 383;
+			EulaWidth = 345;
+			BitmapX = 63;
+			break;
+		}
 		default:
 		{
 			Window_Width = 455;
 			Window_Height = 380;
 			EulaY = 243;
 			CopyWidth = 385;
+			CopyY = 165;
 			OwnerY = 279;
 			OrganizationY = 297;
 			ButtonX = 373;
@@ -200,6 +221,10 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 	CString wintitle(MAKEINTRESOURCE(IDS_APP_TITLE));
 	title = wintitle;
     LoadStringW(hInstance, IDC_WINVER, szWindowClass, MAX_LOADSTRING);
+
+	// button text
+	CString buttontxt(MAKEINTRESOURCE(IDS_BUTTON));
+	OkButton = buttontxt;
 
 	// registers class
     MyRegisterClass(hInstance);
