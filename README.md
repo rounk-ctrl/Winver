@@ -10,3 +10,5 @@ win32 real
  - Polish
  - Greek
  - German
+ - Vietnamese
+ - Chinese simplified
