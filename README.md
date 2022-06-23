@@ -13,3 +13,4 @@ win32 real
  - Vietnamese
  - Chinese simplified
  - Italian
+ - Russian
