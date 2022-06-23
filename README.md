@@ -10,6 +10,7 @@ win32 real
  - Polish
  - Greek
  - German
+ - Hungarian
  - Vietnamese
  - Chinese simplified
  - Italian
