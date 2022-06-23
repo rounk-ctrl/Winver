@@ -359,6 +359,7 @@ void UpdateEulaLayoutForDpi(HWND hWnd)
 	int dpiScaledHeight = MulDiv(40, iDpi, 96);
 	SetWindowPos(hWnd, hWnd, dpiScaledX, dpiScaledY, dpiScaledWidth, dpiScaledHeight, SWP_NOZORDER | SWP_NOACTIVATE);
 }
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     HDC hdc;
@@ -479,7 +480,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 	            HDC hdc = reinterpret_cast<HDC>(wParam);
 				SetTextColor(hdc, darkTextColor);
-				SetBkColor(hdc, darkBkColor);
+				SetBkColor(hdc, TRANSPARENT);
 				if (!hbrBkgnd)
 					hbrBkgnd = CreateSolidBrush(darkBkColor);
 	            return reinterpret_cast<INT_PTR>(hbrBkgnd);

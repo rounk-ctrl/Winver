@@ -331,7 +331,7 @@ BOOLEAN CreateHwnds(HWND hWnd, HINSTANCE hInst)
 	SetWindowTheme(button, L"Explorer", nullptr);
 	SendMessageW(button, WM_THEMECHANGED, 0, 0);
 	CString eulatxt(MAKEINTRESOURCE(IDS_TEXT_EULA));
-	yes = CreateWindowExW(0, WC_LINK, eulatxt, WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 0, 0, hWnd, (HMENU)10001, hInst, NULL);
+	yes = CreateWindowExW(WS_EX_COMPOSITED, WC_LINK, eulatxt, WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 0, 0, hWnd, (HMENU)200, hInst, NULL);
 	FixFontForEula(hWnd);
 	SendMessage(hWnd, DM_SETDEFID, (WPARAM)button, 0);
 	SetFocus(button);
