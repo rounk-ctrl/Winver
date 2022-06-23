@@ -302,7 +302,7 @@ BOOLEAN DrawStrings(HWND hWnd, Graphics& graphics, HINSTANCE hInst, RECT rc)
 	RectF        imgrectF(65, 10, 305, 90);
 	Gdiplus::Bitmap* pBmp = LoadImageFromResource(hInst, MAKEINTRESOURCE(IDB_R11), L"PNG");
 #else
-	Gdiplus::Bitmap* pBmp = LoadImageFromResource(hInst, MAKEINTRESOURCE(IDB_STOCK), L"PNG");
+	Gdiplus::Bitmap* pBmp = LoadImageFromResource(hInst, MAKEINTRESOURCE(IDB_R11), L"PNG");
 	RectF        imgrectF(BitmapX, 15, 350, 67);
 #endif
 	graphics.DrawImage(pBmp, FixedRectF(imgrectF));

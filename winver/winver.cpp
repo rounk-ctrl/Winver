@@ -288,13 +288,8 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.cbClsExtra = 0;
     wcex.cbWndExtra = 0;
     wcex.hInstance = hInstance;
-#if BUILD_R11
-    wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_R11ICO));
-	wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_R11ICO));
-#else 
-	wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_STOCKICO));
-	wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_STOCKICO));
-#endif
+    wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_R11));
+	wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_R11));
     wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wcex.lpszMenuName = NULL;

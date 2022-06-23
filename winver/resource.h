@@ -16,9 +16,9 @@
 #define IDS_BUTTON                      110
 #define IDB_R11                         134
 #define IDD_EULA                        137
-#define IDB_STOCK                       138
-#define IDI_STOCKICO                    140
 #define IDR_ACCL                        144
+#define IDI_ICON1                       154
+#define IDI_R11                         154
 #define IDC_RICHEDIT21                  1000
 #define ID_RETURN                       32772
 #define ID_ESC                          32774
@@ -30,7 +30,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        147
+#define _APS_NEXT_RESOURCE_VALUE        155
 #define _APS_NEXT_COMMAND_VALUE         32776
 #define _APS_NEXT_CONTROL_VALUE         1003
 #define _APS_NEXT_SYMED_VALUE           110
