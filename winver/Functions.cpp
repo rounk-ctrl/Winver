@@ -306,6 +306,14 @@ BOOLEAN DrawStrings(HWND hWnd, Graphics& graphics, HINSTANCE hInst, RECT rc)
 	RectF        imgrectF(BitmapX, 15, 350, 67);
 #endif
 	graphics.DrawImage(pBmp, FixedRectF(imgrectF));
+
+	//clean up
+	DeleteObject(&font);
+	DeleteObject(&fontFamily);
+	DeleteObject(&emSize);
+	DeleteObject(&lightmodetext);
+	DeleteObject(&darkmodetext);
+	DeleteObject(&pBmp);
 	return TRUE;
 }
 
@@ -319,15 +327,19 @@ void FixFontForEula(HWND hWnd)
 
 BOOLEAN CreateHwnds(HWND hWnd, HINSTANCE hInst)
 {
-	button = CreateWindow(L"Button", OkButton, WS_CHILD | WS_TABSTOP | WS_VISIBLE | BS_FLAT | BS_DEFPUSHBUTTON, 0, 0, 0, 0, hWnd, NULL, hInst, NULL);
+	button = CreateWindow(L"button", L"", WS_CHILD | WS_TABSTOP | WS_VISIBLE , 0, 0, 0, 0, hWnd, (HMENU)199, hInst, NULL);
+	/*
 	SetWindowTheme(button, L"Explorer", nullptr);
 	SendMessage(button, WM_SETFONT, (LPARAM)GetStockObject(DEFAULT_GUI_FONT), true);
 	SendMessageW(button, WM_THEMECHANGED, 0, 0);
+	*/
 	CString eulatxt(MAKEINTRESOURCE(IDS_TEXT_EULA));
 	yes = CreateWindowExW(0, WC_LINK, eulatxt, WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 0, 0, hWnd, (HMENU)10001, hInst, NULL);
 	FixFontForEula(hWnd);
+	/*
 	SendMessage(hWnd, DM_SETDEFID, (WPARAM)button, 0);
 	SetFocus(button);
+	*/
 	UpdateWindow(hWnd);
 	return TRUE;
 }

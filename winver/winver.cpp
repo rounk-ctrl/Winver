@@ -402,8 +402,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 		case WM_NOTIFY:
-		switch (((LPNMHDR)lParam)->code)
 		{
+			switch (((LPNMHDR)lParam)->code)
+			{
 			case NM_CLICK:          // Fall through to the next case.
 
 			case NM_RETURN:
@@ -417,6 +418,60 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					ShellExecute(hWnd, L"open", L"write.exe", L"C:\\Windows\\System32\\license.rtf", NULL, SW_SHOW);
 				}
 				break;
+			}
+			case NM_CUSTOMDRAW:
+			{
+				if (((LPNMHDR)lParam)->idFrom == 199)
+				{
+					LPNMHDR some_item = (LPNMHDR)lParam;
+					LPNMCUSTOMDRAW item = (LPNMCUSTOMDRAW)some_item;
+					SetBkMode(item->hdc, TRANSPARENT);
+					Gdiplus::Graphics graphicshdc(item->hdc);
+					SolidBrush      lightmodetext(Gdiplus::Color(255, 0, 0, 0));
+					SolidBrush      darkmodetext(Gdiplus::Color(255, 255, 255, 255));
+					int primaryMonitorDpi = GetDpiForWindow(::GetDesktopWindow());
+					int currentMonitorDpi = ::GetDpiForWindow(hWnd);
+					StringFormat stringFormat;
+					stringFormat.SetAlignment(StringAlignmentCenter);
+					stringFormat.SetLineAlignment(StringAlignmentCenter);
+					Gdiplus::REAL emSize = 9.0 * currentMonitorDpi / primaryMonitorDpi;
+					FontFamily      fontFamily(L"Segoe UI Variable Small");
+					Gdiplus::Font   font(&fontFamily, emSize);
+					if (item->uItemState & CDIS_SELECTED)
+					{
+						graphicshdc.DrawString(OkButton, -1, &font, RectF(item->rc.left, item->rc.top, item->rc.right - item->rc.left, item->rc.bottom - item->rc.top), &stringFormat, DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+						DeleteObject(&font);
+						DeleteObject(&fontFamily);
+						DeleteObject(&emSize);
+						DeleteObject(&lightmodetext);
+						DeleteObject(&darkmodetext);
+						return CDRF_DODEFAULT;
+					}
+					else
+					{
+						if (item->uItemState & CDIS_HOT) //Our mouse is over the button
+						{
+							graphicshdc.DrawString(OkButton, -1, &font, RectF(item->rc.left, item->rc.top, item->rc.right - item->rc.left, item->rc.bottom - item->rc.top), &stringFormat, DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+							DeleteObject(&font);
+							DeleteObject(&fontFamily);
+							DeleteObject(&emSize);
+							DeleteObject(&lightmodetext);
+							DeleteObject(&darkmodetext);
+							return CDRF_DODEFAULT;
+						}
+						graphicshdc.DrawString(OkButton, -1, &font, RectF(item->rc.left, item->rc.top, item->rc.right - item->rc.left, item->rc.bottom - item->rc.top), &stringFormat, DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+						DeleteObject(&font);
+						DeleteObject(&fontFamily);
+						DeleteObject(&emSize);
+						DeleteObject(&lightmodetext);
+						DeleteObject(&darkmodetext);
+						return CDRF_DODEFAULT;
+					}
+				}
+				}
+				
+			return CDRF_DODEFAULT;
+			break;
 			}
 		}
 		case WM_CTLCOLORSTATIC:
@@ -446,9 +501,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	        Gdiplus::Graphics graphics(hdc);
 			DrawStrings(hWnd, graphics, hInst, rc);
 			EndPaint(hWnd, &ps);
+			DeleteObject(&rc);
 			break;
 		}
 		case WM_DESTROY:
+			DeleteObject(&hdc);
+			DeleteObject(&ps);
+			DeleteObject(&brush);
 			PostQuitMessage(0);
 			break;
 		default:
