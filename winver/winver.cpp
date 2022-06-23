@@ -468,8 +468,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 						return CDRF_DODEFAULT;
 					}
 				}
-				}
-				
+			}
 			return CDRF_DODEFAULT;
 			break;
 			}
