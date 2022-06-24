@@ -28,3 +28,7 @@ BOOL DarkTitleBar(HWND hWnd);
 BOOLEAN DrawStrings(HWND hWnd, Gdiplus::Graphics& graphics, HINSTANCE hInst, RECT rc);
 BOOLEAN CreateHwnds(HWND hWnd, HINSTANCE hInst);
 void FixFontForEula(HWND hWnd);
+BOOL FillRichEditFromFile(HWND hwnd, LPCTSTR pszFile);
+void SetupRichEdit(HWND hwndEdit, HWND hDlg, HINSTANCE hInst);
+BOOL GetwinBrandName();
+BOOL CustomDrawButton(LPARAM lParam, HWND hWnd);

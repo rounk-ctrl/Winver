@@ -30,12 +30,18 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DpiHelpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="winver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Functions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DpiHelpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -49,12 +55,6 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="icon.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="IMAGE2123.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="Windows11InstallationAssistant_IDI_BOXSTUB.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
