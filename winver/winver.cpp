@@ -401,8 +401,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			switch (((LPNMHDR)lParam)->code)
 			{
-			case NM_CLICK:          // Fall through to the next case.
-
+			case NM_CLICK:
 			case NM_RETURN:
 			{
 				PNMLINK pNMLink = (PNMLINK)lParam;
@@ -527,6 +526,14 @@ void UpdateEulaButtonLayoutForDpi(HWND hWnd)
 	int dpiScaledHeight = MulDiv(23, iDpi, 96);
 	SetWindowPos(hWnd, hWnd, dpiScaledX, dpiScaledY, dpiScaledWidth, dpiScaledHeight, SWP_NOZORDER | SWP_NOACTIVATE);
 }
+void SetTxtColor(HWND hWindow, COLORREF clr) {
+	CHARFORMAT cf;
+	cf.cbSize = sizeof(cf);
+	cf.dwMask = CFM_COLOR;
+	cf.crTextColor = clr;
+	cf.dwEffects = 0;
+	SendMessage(hWindow, EM_SETCHARFORMAT, SCF_ALL, (LPARAM)&cf);
+}
 INT_PTR CALLBACK EulaProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	HWND hwndEdit{};
@@ -544,14 +551,45 @@ INT_PTR CALLBACK EulaProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			scaled_size.bottom = static_cast<LONG>(355 * scaling_factor);
 			AdjustWindowRectExForDpi(&scaled_size, WS_OVERLAPPEDWINDOW, false, 0, dpi);
 			SetWindowPos(hDlg, nullptr, CW_USEDEFAULT, CW_USEDEFAULT, scaled_size.right - scaled_size.left, scaled_size.bottom - scaled_size.top, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
-			hwndEdit = CreateWindowEx(0, MSFTEDIT_CLASS, TEXT("Type here"),
-				ES_MULTILINE | WS_VISIBLE | WS_CHILD | WS_BORDER | WS_TABSTOP,
+			hwndEdit = CreateWindowEx(WS_EX_COMPOSITED, MSFTEDIT_CLASS, TEXT("Type here"),
+				ES_MULTILINE | WS_VISIBLE | WS_CHILD | WS_TABSTOP,
 				10, 15, 540, 280,
 				hDlg, (HMENU)230, hInst, NULL);
 			FillRichEditFromFile(hwndEdit, L"C:\\windows\\system32\\license.rtf");
 			UpdateEulaRichEdtLayoutForDpi(hwndEdit);
 			UpdateEulaButtonLayoutForDpi(GetDlgItem(hDlg, IDOK));
+			DarkTitleBar(hDlg);
+			ApplyMica(hDlg);
+			if (DarkThemeEnabled)
+			{
+				SendMessage(hwndEdit, EM_SETBKGNDCOLOR, 0, darkBkColor);
+				SetTxtColor(hwndEdit, darkTextColor);
+			}
+			UpdateWindow(hDlg);
 			break;
+		}
+		case WM_CTLCOLORSTATIC:
+		{
+			if (DarkThemeEnabled)
+			{
+				HDC hdc = reinterpret_cast<HDC>(wParam);
+				SetTextColor(hdc, darkTextColor);
+				SetBkColor(hdc, darkBkColor);
+				if (!hbrBkgnd)
+					hbrBkgnd = CreateSolidBrush(darkBkColor);
+				return reinterpret_cast<INT_PTR>(hbrBkgnd);
+			}
+		}
+		case WM_CTLCOLORDLG:
+		{
+			if (DarkThemeEnabled)
+			{
+				return (INT_PTR)CreateSolidBrush(darkBkColor);
+			}
+			else
+			{
+				return (INT_PTR)CreateSolidBrush(lightBkColor);
+			}
 		}
 		case WM_COMMAND:
 			if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
