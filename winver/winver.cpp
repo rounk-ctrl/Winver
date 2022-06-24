@@ -95,7 +95,7 @@ BOOL FillRichEditFromFile(HWND hwnd, LPCTSTR pszFile)
 		FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 	if (hFile != INVALID_HANDLE_VALUE) {
 		EDITSTREAM es = { (DWORD_PTR)hFile, 0, EditStreamCallback };
-		if (SendMessage(hwnd, EM_STREAMIN, SF_RTFNOOBJS, (LPARAM)&es) &&
+		if (SendMessage(hwnd, EM_STREAMIN, SF_RTF, (LPARAM)&es) &&
 			es.dwError == 0) {
 			fSuccess = TRUE;
 		}
