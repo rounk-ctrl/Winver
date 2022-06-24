@@ -95,7 +95,7 @@ BOOL FillRichEditFromFile(HWND hwnd, LPCTSTR pszFile)
 		FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 	if (hFile != INVALID_HANDLE_VALUE) {
 		EDITSTREAM es = { (DWORD_PTR)hFile, 0, EditStreamCallback };
-		if (SendMessage(hwnd, EM_STREAMIN, SF_RTF, (LPARAM)&es) &&
+		if (SendMessage(hwnd, EM_STREAMIN, SF_RTFNOOBJS, (LPARAM)&es) &&
 			es.dwError == 0) {
 			fSuccess = TRUE;
 		}
@@ -262,7 +262,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 		return FALSE;
 	}
 
-	// LoadLibraryExW(L"Msftedit.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+	LoadLibraryExW(L"Msftedit.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 	HACCEL hAccel = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_ACCL));
 	MSG msg;
 	// Main message loop:
@@ -410,8 +410,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				if (wcscmp(item.szID, L"idInfo") == 0)
 				{
 					// WIP
-					// DialogBox(hInst, MAKEINTRESOURCE(IDD_EULA), hWnd, EulaProc);
-					ShellExecute(hWnd, L"open", L"write.exe", L"C:\\Windows\\System32\\license.rtf", NULL, SW_SHOW);
+					DialogBox(hInst, MAKEINTRESOURCE(IDD_EULA), hWnd, EulaProc);					
 				}
 				break;
 			}
@@ -510,14 +509,49 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	}
     return 0;
 }
+void UpdateEulaRichEdtLayoutForDpi(HWND hwnd)
+{
+	int iDpi = ::GetDpiForWindow(hWnd);
+	int dpiScaledX = MulDiv(10, iDpi, 96);
+	int dpiScaledY = MulDiv(15, iDpi, 96);
+	int dpiScaledWidth = MulDiv(585, iDpi, 96);
+	int dpiScaledHeight = MulDiv(295, iDpi, 96);
+	SetWindowPos(hwnd, hwnd, dpiScaledX, dpiScaledY, dpiScaledWidth, dpiScaledHeight, SWP_NOZORDER | SWP_NOACTIVATE);
+}
+void UpdateEulaButtonLayoutForDpi(HWND hWnd)
+{
+	int iDpi = ::GetDpiForWindow(hWnd);
+	int dpiScaledX = MulDiv(525, iDpi, 96);
+	int dpiScaledY = MulDiv(320, iDpi, 96);
+	int dpiScaledWidth = MulDiv(70, iDpi, 96);
+	int dpiScaledHeight = MulDiv(23, iDpi, 96);
+	SetWindowPos(hWnd, hWnd, dpiScaledX, dpiScaledY, dpiScaledWidth, dpiScaledHeight, SWP_NOZORDER | SWP_NOACTIVATE);
+}
 INT_PTR CALLBACK EulaProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	HWND hwndEdit{};
 	UNREFERENCED_PARAMETER(lParam);
 	switch (message)
 	{
 		case WM_INITDIALOG:
 		{
-			FillRichEditFromFile(GetDlgItem(hDlg, IDC_RICHEDIT21), L"C:\\Users\\Rounak\\Desktop\\Document.rtf");
+			UINT dpi = GetDpiForWindow(hDlg);
+			float scaling_factor = static_cast<float>(dpi) / 96;
+			RECT scaled_size;
+			scaled_size.left = 0;
+			scaled_size.top = 0;
+			scaled_size.right = static_cast<LONG>(605 * scaling_factor);
+			scaled_size.bottom = static_cast<LONG>(355 * scaling_factor);
+			AdjustWindowRectExForDpi(&scaled_size, WS_OVERLAPPEDWINDOW, false, 0, dpi);
+			SetWindowPos(hDlg, nullptr, CW_USEDEFAULT, CW_USEDEFAULT, scaled_size.right - scaled_size.left, scaled_size.bottom - scaled_size.top, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
+			hwndEdit = CreateWindowEx(0, MSFTEDIT_CLASS, TEXT("Type here"),
+				ES_MULTILINE | WS_VISIBLE | WS_CHILD | WS_BORDER | WS_TABSTOP,
+				10, 15, 540, 280,
+				hDlg, (HMENU)230, hInst, NULL);
+			FillRichEditFromFile(hwndEdit, L"C:\\windows\\system32\\license.rtf");
+			UpdateEulaRichEdtLayoutForDpi(hwndEdit);
+			UpdateEulaButtonLayoutForDpi(GetDlgItem(hDlg, IDOK));
+			break;
 		}
 		case WM_COMMAND:
 			if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
