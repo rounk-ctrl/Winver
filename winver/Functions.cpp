@@ -273,6 +273,7 @@ PointF FixedPointF(PointF o)
 	REAL Y = MulDiv(o.Y, iDpi, 96);
 	return PointF(X, Y);
 }
+
 RectF FixedRectF(RectF o)
 {
 	int iDpi = currentMonitorDpi;
@@ -282,6 +283,7 @@ RectF FixedRectF(RectF o)
 	REAL height = MulDiv(o.Height, iDpi, 96);
 	return RectF(X, Y, width, height);
 }
+
 BOOLEAN DrawStrings(HWND hWnd, Graphics& graphics, HINSTANCE hInst, RECT rc)
 {
 	SolidBrush      lightmodetext(Gdiplus::Color(255, 0, 0, 0));
@@ -337,4 +339,133 @@ BOOLEAN CreateHwnds(HWND hWnd, HINSTANCE hInst)
 	SetFocus(button);
 	UpdateWindow(hWnd);
 	return TRUE;
+}
+
+DWORD CALLBACK EditStreamCallback(DWORD_PTR dwCookie, LPBYTE lpBuff, LONG cb, PLONG pcb)
+{
+	HANDLE hFile = (HANDLE)dwCookie;
+	return !ReadFile(hFile, lpBuff, cb, (DWORD *)pcb, NULL);
+}
+
+BOOL FillRichEditFromFile(HWND hwnd, LPCTSTR pszFile)
+{
+	BOOL fSuccess = FALSE;
+	HANDLE hFile = CreateFile(pszFile, GENERIC_READ, FILE_SHARE_READ,
+		0, OPEN_EXISTING,
+		FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+	if (hFile != INVALID_HANDLE_VALUE) {
+		EDITSTREAM es = { (DWORD_PTR)hFile, 0, EditStreamCallback };
+		if (SendMessage(hwnd, EM_STREAMIN, SF_RTF, (LPARAM)&es) &&
+			es.dwError == 0) {
+			fSuccess = TRUE;
+		}
+		CloseHandle(hFile);
+	}
+	return fSuccess;
+}
+
+void SetTxtColor(HWND hWindow, COLORREF clr) {
+	CHARFORMAT cf;
+	cf.cbSize = sizeof(cf);
+	cf.dwMask = CFM_COLOR;
+	cf.crTextColor = clr;
+	cf.dwEffects = 0;
+	SendMessage(hWindow, EM_SETCHARFORMAT, SCF_ALL, (LPARAM)&cf);
+}
+
+void SetupRichEdit(HWND hwndEdit, HWND hDlg, HINSTANCE hInst)
+{
+	hwndEdit = CreateWindowEx(WS_EX_COMPOSITED, MSFTEDIT_CLASS, TEXT("Type here"),
+		ES_MULTILINE | WS_VISIBLE | WS_CHILD | WS_TABSTOP,
+		10, 15, 540, 280,
+		hDlg, (HMENU)230, hInst, NULL);
+	SendMessage(hwndEdit, EM_SETREADONLY, TRUE, 0);
+	FillRichEditFromFile(hwndEdit, L"C:\\windows\\system32\\license.rtf");
+	if (DarkThemeEnabled)
+	{
+		SendMessage(hwndEdit, EM_SETBKGNDCOLOR, 0, darkBkColor);
+		SetTxtColor(hwndEdit, darkTextColor);
+	}
+}
+
+BOOL GetwinBrandName()
+{
+	BOOL BRet = FALSE;
+	HMODULE hModNtdll = NULL;
+	if (hModNtdll = LoadLibraryExW(L"winbrand.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32))
+	{
+		typedef LPTSTR(WINAPI* BrandingFormatString) (const wchar_t*);
+		BrandingFormatString getwinName;
+		getwinName = (BrandingFormatString)::GetProcAddress(hModNtdll, "BrandingFormatString");
+		if (getwinName)
+		{
+			CString lpct(MAKEINTRESOURCE(IDS_TEXT_COPY));
+			AboutWin = getwinName(lpct);
+
+			const wchar_t copy[50] = L"%WINDOWS_COPYRIGHT%";
+			CopyRight = getwinName(copy);
+
+			const wchar_t msw[50] = L"%MICROSOFT_COMPANYNAME% %WINDOWS_GENERIC%";
+			MsWin = getwinName(msw);
+			BRet = TRUE;
+		}
+		::FreeLibrary(hModNtdll);
+		hModNtdll = NULL;
+	}
+	else
+	{
+		MessageBox(0, L"Bruh can't find winbrand.dll", L"Error", MB_ICONERROR);
+	}
+	return BRet;
+}
+
+BOOL CustomDrawButton(LPARAM lParam, HWND hWnd)
+{
+	if (((LPNMHDR)lParam)->idFrom == 199)
+	{
+		LPNMHDR some_item = (LPNMHDR)lParam;
+		LPNMCUSTOMDRAW item = (LPNMCUSTOMDRAW)some_item;
+		SetBkMode(item->hdc, TRANSPARENT);
+		Gdiplus::Graphics graphicshdc(item->hdc);
+		SolidBrush      lightmodetext(Gdiplus::Color(255, 0, 0, 0));
+		SolidBrush      darkmodetext(Gdiplus::Color(255, 255, 255, 255));
+		int primaryMonitorDpi = GetDpiForWindow(::GetDesktopWindow());
+		int currentMonitorDpi = ::GetDpiForWindow(hWnd);
+		StringFormat stringFormat;
+		stringFormat.SetAlignment(StringAlignmentCenter);
+		stringFormat.SetLineAlignment(StringAlignmentCenter);
+		Gdiplus::REAL emSize = 9.0 * currentMonitorDpi / primaryMonitorDpi;
+		FontFamily      fontFamily(L"Segoe UI Variable Small");
+		Gdiplus::Font   font(&fontFamily, emSize);
+		if (item->uItemState & CDIS_SELECTED)
+		{
+			graphicshdc.DrawString(OkButton, -1, &font, RectF(item->rc.left, item->rc.top, item->rc.right - item->rc.left, item->rc.bottom - item->rc.top), &stringFormat, DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+			DeleteObject(&font);
+			DeleteObject(&fontFamily);
+			DeleteObject(&emSize);
+			DeleteObject(&lightmodetext);
+			DeleteObject(&darkmodetext);
+			return CDRF_DODEFAULT;
+		}
+		else
+		{
+			if (item->uItemState & CDIS_HOT) //Our mouse is over the button
+			{
+				graphicshdc.DrawString(OkButton, -1, &font, RectF(item->rc.left, item->rc.top, item->rc.right - item->rc.left, item->rc.bottom - item->rc.top), &stringFormat, DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+				DeleteObject(&font);
+				DeleteObject(&fontFamily);
+				DeleteObject(&emSize);
+				DeleteObject(&lightmodetext);
+				DeleteObject(&darkmodetext);
+				return CDRF_DODEFAULT;
+			}
+			graphicshdc.DrawString(OkButton, -1, &font, RectF(item->rc.left, item->rc.top, item->rc.right - item->rc.left, item->rc.bottom - item->rc.top), &stringFormat, DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+			DeleteObject(&font);
+			DeleteObject(&fontFamily);
+			DeleteObject(&emSize);
+			DeleteObject(&lightmodetext);
+			DeleteObject(&darkmodetext);
+			return CDRF_DODEFAULT;
+		}
+	}
 }

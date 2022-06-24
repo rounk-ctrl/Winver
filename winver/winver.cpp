@@ -4,6 +4,7 @@
 #include "framework.h"
 #include "winver.h"
 #include "Functions.h"
+#include "DpiHelpers.h"
 
 HWND hWnd;
 using namespace Gdiplus;
@@ -52,57 +53,6 @@ BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    EulaProc(HWND, UINT, WPARAM, LPARAM);
 
-BOOL GetwinBrandName()
-{
-    BOOL BRet = FALSE;
-    HMODULE hModNtdll = NULL;
-    if (hModNtdll = LoadLibraryExW(L"winbrand.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32))
-    {
-        typedef LPTSTR(WINAPI* BrandingFormatString) (const wchar_t*);
-        BrandingFormatString getwinName;
-        getwinName = (BrandingFormatString)::GetProcAddress(hModNtdll, "BrandingFormatString");
-        if (getwinName)
-        {
-            CString lpct(MAKEINTRESOURCE(IDS_TEXT_COPY));
-            AboutWin = getwinName(lpct);
-
-            const wchar_t copy[50] = L"%WINDOWS_COPYRIGHT%";
-            CopyRight = getwinName(copy);
-
-            const wchar_t msw[50] = L"%MICROSOFT_COMPANYNAME% %WINDOWS_GENERIC%";
-            MsWin = getwinName(msw);
-            BRet = TRUE;
-        }
-        ::FreeLibrary(hModNtdll);
-        hModNtdll = NULL;
-    }
-    else
-    {
-        MessageBox(hWnd, L"Bruh can't find winbrand.dll", L"Error", MB_ICONERROR);
-    }
-    return BRet;
-}
-DWORD CALLBACK EditStreamCallback(DWORD_PTR dwCookie, LPBYTE lpBuff, LONG cb, PLONG pcb)
-{
-	HANDLE hFile = (HANDLE)dwCookie;
-	return !ReadFile(hFile, lpBuff, cb, (DWORD *)pcb, NULL);
-}
-BOOL FillRichEditFromFile(HWND hwnd, LPCTSTR pszFile)
-{
-	BOOL fSuccess = FALSE;
-	HANDLE hFile = CreateFile(pszFile, GENERIC_READ, FILE_SHARE_READ,
-		0, OPEN_EXISTING,
-		FILE_FLAG_SEQUENTIAL_SCAN, NULL);
-	if (hFile != INVALID_HANDLE_VALUE) {
-		EDITSTREAM es = { (DWORD_PTR)hFile, 0, EditStreamCallback };
-		if (SendMessage(hwnd, EM_STREAMIN, SF_RTF, (LPARAM)&es) &&
-			es.dwError == 0) {
-			fSuccess = TRUE;
-		}
-		CloseHandle(hFile);
-	}
-	return fSuccess;
-}
 void SetProperWindowDimensions(LANGID yes)
 {
 	switch (yes)
@@ -200,6 +150,7 @@ void SetProperWindowDimensions(LANGID yes)
 		}
 	}
 }
+
 int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
@@ -297,62 +248,37 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 
     return RegisterClassExW(&wcex);
 }
+
 HMODULE hUxtheme = LoadLibraryExW(L"uxtheme.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
     hInst = hInstance; // Store instance handle in our global variable
 
 	DarkThemeEnabled = IsExplorerDarkTheme();
     SetPreferredAppMode = (fnSetPreferredAppMode)GetProcAddress(hUxtheme, MAKEINTRESOURCEA(135));
-    RefreshImmersiveColorPolicyState = (fnRefreshImmersiveColorPolicyState)GetProcAddress(hUxtheme, MAKEINTRESOURCEA(104));
     AllowDarkModeForWindow = (fnAllowDarkModeForWindow)GetProcAddress(hUxtheme, MAKEINTRESOURCEA(133));
     FreeLibrary(hUxtheme);
 
     if (DarkThemeEnabled)
     {
-        SetPreferredAppMode(PreferredAppMode::ForceDark);
+        SetPreferredAppMode(PreferredAppMode::AllowDark);
     }
-    hWnd = CreateWindowW(szWindowClass, title, WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, hInstance, nullptr);
+
+    hWnd = CreateWindowW(szWindowClass, title, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, hInstance, nullptr);
 
 	if (!hWnd)
 	{
 		return FALSE;
 	}
 
-	UINT dpi = GetDpiForWindow(hWnd);
-	float scaling_factor = static_cast<float>(dpi) / 96;
-	RECT scaled_size;
-	scaled_size.left = 0;
-	scaled_size.top = 0;
-	scaled_size.right = static_cast<LONG>(Window_Width * scaling_factor);
-	scaled_size.bottom = static_cast<LONG>(Window_Height * scaling_factor);
-	AdjustWindowRectExForDpi(&scaled_size, WS_OVERLAPPEDWINDOW, false, 0, dpi);
-	SetWindowPos(hWnd, nullptr, CW_USEDEFAULT, CW_USEDEFAULT, scaled_size.right - scaled_size.left, scaled_size.bottom - scaled_size.top, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
+	ScaleWindow(hWnd, Window_Width, Window_Height);
     SetWindowLong(hWnd, GWL_STYLE, GetWindowLong(hWnd, GWL_STYLE) & ~WS_MINIMIZEBOX & ~WS_MAXIMIZEBOX &  ~WS_SIZEBOX);
 	DarkTitleBar(hWnd);
     ApplyMica(hWnd);
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
     return TRUE;
-}
-void UpdateButtonLayoutForDpi(HWND hWnd)
-{
-	int iDpi = ::GetDpiForWindow(hWnd);
-	int dpiScaledX = MulDiv(ButtonX, iDpi, 96);
-	int dpiScaledY = MulDiv(ButtonY, iDpi, 96);
-	int dpiScaledWidth = MulDiv(70, iDpi, 96);
-	int dpiScaledHeight = MulDiv(23, iDpi, 96);
-	SetWindowPos(hWnd, hWnd, dpiScaledX, dpiScaledY, dpiScaledWidth, dpiScaledHeight, SWP_NOZORDER | SWP_NOACTIVATE);
-}
-void UpdateEulaLayoutForDpi(HWND hWnd)
-{
-	int iDpi = ::GetDpiForWindow(hWnd);
-	int dpiScaledX = MulDiv(47, iDpi, 96);
-	int dpiScaledY = MulDiv(EulaY, iDpi, 96);
-	int dpiScaledWidth = MulDiv(EulaWidth, iDpi, 96);
-	int dpiScaledHeight = MulDiv(40, iDpi, 96);
-	SetWindowPos(hWnd, hWnd, dpiScaledX, dpiScaledY, dpiScaledWidth, dpiScaledHeight, SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -365,8 +291,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case WM_CREATE:
 		{
 			CreateHwnds(hWnd, hInst);
-			UpdateButtonLayoutForDpi(button);
-			UpdateEulaLayoutForDpi(yes);
+			UpdateButtonLayoutForDpi(button, ButtonX, ButtonY);
+			UpdateEulaLayoutForDpi(yes, EulaY, EulaWidth);
 			break;
 		}
 		case WM_DPICHANGED:
@@ -379,9 +305,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				rect.right - rect.left,
 				rect.bottom - rect.top,
 				SWP_NOACTIVATE | SWP_NOZORDER);
-			UpdateButtonLayoutForDpi(button);
-			UpdateEulaLayoutForDpi(yes);
+			UpdateButtonLayoutForDpi(button, ButtonX, ButtonY);
+			UpdateEulaLayoutForDpi(yes, EulaY, EulaWidth);
 			FixFontForEula(hWnd);
+			break;
 		}
 		case WM_COMMAND:
 		{
@@ -389,11 +316,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 	            HWND hwndBtn = (HWND)lParam;
 				if (hwndBtn == button)
-					PostQuitMessage(0);
+					SendMessage(hWnd, WM_DESTROY, 0, 0);
 			}
 			if ((LOWORD(wParam) == ID_RETURN) || (LOWORD(wParam) == ID_ESC))
 			{
-				PostQuitMessage(0);
+				SendMessage(hWnd, WM_DESTROY, 0, 0);
 			}
 			break;
 		}
@@ -408,60 +335,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				LITEM   item = pNMLink->item;
 				if (wcscmp(item.szID, L"idInfo") == 0)
 				{
-					// WIP
 					DialogBox(hInst, MAKEINTRESOURCE(IDD_EULA), hWnd, EulaProc);					
 				}
 				break;
 			}
 			case NM_CUSTOMDRAW:
 			{
-				if (((LPNMHDR)lParam)->idFrom == 199)
-				{
-					LPNMHDR some_item = (LPNMHDR)lParam;
-					LPNMCUSTOMDRAW item = (LPNMCUSTOMDRAW)some_item;
-					SetBkMode(item->hdc, TRANSPARENT);
-					Gdiplus::Graphics graphicshdc(item->hdc);
-					SolidBrush      lightmodetext(Gdiplus::Color(255, 0, 0, 0));
-					SolidBrush      darkmodetext(Gdiplus::Color(255, 255, 255, 255));
-					int primaryMonitorDpi = GetDpiForWindow(::GetDesktopWindow());
-					int currentMonitorDpi = ::GetDpiForWindow(hWnd);
-					StringFormat stringFormat;
-					stringFormat.SetAlignment(StringAlignmentCenter);
-					stringFormat.SetLineAlignment(StringAlignmentCenter);
-					Gdiplus::REAL emSize = 9.0 * currentMonitorDpi / primaryMonitorDpi;
-					FontFamily      fontFamily(L"Segoe UI Variable Small");
-					Gdiplus::Font   font(&fontFamily, emSize);
-					if (item->uItemState & CDIS_SELECTED)
-					{
-						graphicshdc.DrawString(OkButton, -1, &font, RectF(item->rc.left, item->rc.top, item->rc.right - item->rc.left, item->rc.bottom - item->rc.top), &stringFormat, DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-						DeleteObject(&font);
-						DeleteObject(&fontFamily);
-						DeleteObject(&emSize);
-						DeleteObject(&lightmodetext);
-						DeleteObject(&darkmodetext);
-						return CDRF_DODEFAULT;
-					}
-					else
-					{
-						if (item->uItemState & CDIS_HOT) //Our mouse is over the button
-						{
-							graphicshdc.DrawString(OkButton, -1, &font, RectF(item->rc.left, item->rc.top, item->rc.right - item->rc.left, item->rc.bottom - item->rc.top), &stringFormat, DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-							DeleteObject(&font);
-							DeleteObject(&fontFamily);
-							DeleteObject(&emSize);
-							DeleteObject(&lightmodetext);
-							DeleteObject(&darkmodetext);
-							return CDRF_DODEFAULT;
-						}
-						graphicshdc.DrawString(OkButton, -1, &font, RectF(item->rc.left, item->rc.top, item->rc.right - item->rc.left, item->rc.bottom - item->rc.top), &stringFormat, DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-						DeleteObject(&font);
-						DeleteObject(&fontFamily);
-						DeleteObject(&emSize);
-						DeleteObject(&lightmodetext);
-						DeleteObject(&darkmodetext);
-						return CDRF_DODEFAULT;
-					}
-				}
+				CustomDrawButton(lParam, hWnd);
 			}
 			return CDRF_DODEFAULT;
 			break;
@@ -508,32 +388,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	}
     return 0;
 }
-void UpdateEulaRichEdtLayoutForDpi(HWND hwnd)
-{
-	int iDpi = ::GetDpiForWindow(hWnd);
-	int dpiScaledX = MulDiv(10, iDpi, 96);
-	int dpiScaledY = MulDiv(15, iDpi, 96);
-	int dpiScaledWidth = MulDiv(585, iDpi, 96);
-	int dpiScaledHeight = MulDiv(295, iDpi, 96);
-	SetWindowPos(hwnd, hwnd, dpiScaledX, dpiScaledY, dpiScaledWidth, dpiScaledHeight, SWP_NOZORDER | SWP_NOACTIVATE);
-}
-void UpdateEulaButtonLayoutForDpi(HWND hWnd)
-{
-	int iDpi = ::GetDpiForWindow(hWnd);
-	int dpiScaledX = MulDiv(525, iDpi, 96);
-	int dpiScaledY = MulDiv(320, iDpi, 96);
-	int dpiScaledWidth = MulDiv(70, iDpi, 96);
-	int dpiScaledHeight = MulDiv(23, iDpi, 96);
-	SetWindowPos(hWnd, hWnd, dpiScaledX, dpiScaledY, dpiScaledWidth, dpiScaledHeight, SWP_NOZORDER | SWP_NOACTIVATE);
-}
-void SetTxtColor(HWND hWindow, COLORREF clr) {
-	CHARFORMAT cf;
-	cf.cbSize = sizeof(cf);
-	cf.dwMask = CFM_COLOR;
-	cf.crTextColor = clr;
-	cf.dwEffects = 0;
-	SendMessage(hWindow, EM_SETCHARFORMAT, SCF_ALL, (LPARAM)&cf);
-}
 INT_PTR CALLBACK EulaProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	HWND hwndEdit{};
@@ -542,29 +396,12 @@ INT_PTR CALLBACK EulaProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		case WM_INITDIALOG:
 		{
-			UINT dpi = GetDpiForWindow(hDlg);
-			float scaling_factor = static_cast<float>(dpi) / 96;
-			RECT scaled_size;
-			scaled_size.left = 0;
-			scaled_size.top = 0;
-			scaled_size.right = static_cast<LONG>(605 * scaling_factor);
-			scaled_size.bottom = static_cast<LONG>(355 * scaling_factor);
-			AdjustWindowRectExForDpi(&scaled_size, WS_OVERLAPPEDWINDOW, false, 0, dpi);
-			SetWindowPos(hDlg, nullptr, CW_USEDEFAULT, CW_USEDEFAULT, scaled_size.right - scaled_size.left, scaled_size.bottom - scaled_size.top, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
-			hwndEdit = CreateWindowEx(WS_EX_COMPOSITED, MSFTEDIT_CLASS, TEXT("Type here"),
-				ES_MULTILINE | WS_VISIBLE | WS_CHILD | WS_TABSTOP,
-				10, 15, 540, 280,
-				hDlg, (HMENU)230, hInst, NULL);
-			FillRichEditFromFile(hwndEdit, L"C:\\windows\\system32\\license.rtf");
+			ScaleDialog(hDlg);
+			SetupRichEdit(hwndEdit, hDlg, hInst);
 			UpdateEulaRichEdtLayoutForDpi(hwndEdit);
 			UpdateEulaButtonLayoutForDpi(GetDlgItem(hDlg, IDOK));
 			DarkTitleBar(hDlg);
 			ApplyMica(hDlg);
-			if (DarkThemeEnabled)
-			{
-				SendMessage(hwndEdit, EM_SETBKGNDCOLOR, 0, darkBkColor);
-				SetTxtColor(hwndEdit, darkTextColor);
-			}
 			UpdateWindow(hDlg);
 			break;
 		}
@@ -582,21 +419,16 @@ INT_PTR CALLBACK EulaProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_CTLCOLORDLG:
 		{
-			if (DarkThemeEnabled)
-			{
-				return (INT_PTR)CreateSolidBrush(darkBkColor);
-			}
-			else
-			{
-				return (INT_PTR)CreateSolidBrush(lightBkColor);
-			}
+			return (INT_PTR)CreateSolidBrush(DarkThemeEnabled ? darkBkColor : lightBkColor);
 		}
 		case WM_COMMAND:
+		{
 			if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
 			{
 				EndDialog(hDlg, LOWORD(wParam));
 				return (INT_PTR)TRUE;
 			}
+		}
 	}
 	return (INT_PTR)FALSE;
 }

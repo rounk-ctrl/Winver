@@ -145,6 +145,7 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="DpiHelpers.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Functions.h" />
     <ClInclude Include="Resource.h" />
@@ -152,6 +153,7 @@
     <ClInclude Include="winver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DpiHelpers.cpp" />
     <ClCompile Include="Functions.cpp" />
     <ClCompile Include="winver.cpp" />
   </ItemGroup>
@@ -160,8 +162,6 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="icon.png" />
-    <Image Include="IMAGE2123.png" />
-    <Image Include="Windows11InstallationAssistant_IDI_BOXSTUB.ico" />
     <Image Include="winver.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
