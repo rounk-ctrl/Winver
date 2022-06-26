@@ -22,6 +22,8 @@
 #define IDC_RICHEDIT21                  1000
 #define ID_RETURN                       32772
 #define ID_ESC                          32774
+#define ID_M                            32776
+#define ID_R                            32776
 #define IDC_STATIC                      -1
 #define IDC_EULA_BOX                    -1
 
@@ -31,7 +33,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        155
-#define _APS_NEXT_COMMAND_VALUE         32776
+#define _APS_NEXT_COMMAND_VALUE         32778
 #define _APS_NEXT_CONTROL_VALUE         1003
 #define _APS_NEXT_SYMED_VALUE           110
 #endif

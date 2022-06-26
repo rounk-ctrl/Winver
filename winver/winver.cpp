@@ -47,6 +47,8 @@ int ButtonY;
 int EulaWidth;
 int BitmapX;
 
+BOOL Eaow = FALSE;
+
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
@@ -275,7 +277,9 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	ScaleWindow(hWnd, Window_Width, Window_Height);
     SetWindowLong(hWnd, GWL_STYLE, GetWindowLong(hWnd, GWL_STYLE) & ~WS_MINIMIZEBOX & ~WS_MAXIMIZEBOX &  ~WS_SIZEBOX);
 	DarkTitleBar(hWnd);
-    ApplyMica(hWnd);
+	if (DarkThemeEnabled)
+		ApplyMica(hWnd);
+
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
     return TRUE;
@@ -285,7 +289,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     HDC hdc;
     PAINTSTRUCT ps;
-    HBRUSH brush = CreateSolidBrush(darkBkColor);
+    HBRUSH brush = CreateSolidBrush(DarkThemeEnabled ? darkBkColor : lightBkColor);
     switch (message)
     {
 		case WM_CREATE:
@@ -318,9 +322,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				if (hwndBtn == button)
 					SendMessage(hWnd, WM_DESTROY, 0, 0);
 			}
-			if ((LOWORD(wParam) == ID_RETURN) || (LOWORD(wParam) == ID_ESC))
+			else if ((LOWORD(wParam) == ID_RETURN) || (LOWORD(wParam) == ID_ESC))
 			{
 				SendMessage(hWnd, WM_DESTROY, 0, 0);
+			}
+			else if ((LOWORD(wParam) == ID_R))
+			{
+				Eaow = TRUE;
+				InvalidateRect(hWnd, NULL, FALSE);
+				UpdateWindow(hWnd);
+				DestroyWindow(yes);
 			}
 			break;
 		}
@@ -349,16 +360,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_CTLCOLORSTATIC:
 		{
-	        if (DarkThemeEnabled)
+			if (DarkThemeEnabled)
 			{
-	            HDC hdc = reinterpret_cast<HDC>(wParam);
+				HDC hdc = reinterpret_cast<HDC>(wParam);
 				SetTextColor(hdc, darkTextColor);
-				SetBkColor(hdc, TRANSPARENT);
+				SetBkColor(hdc, darkBkColor);
 				if (!hbrBkgnd)
 					hbrBkgnd = CreateSolidBrush(darkBkColor);
-	            return reinterpret_cast<INT_PTR>(hbrBkgnd);
-		    }
-			break;
+				return reinterpret_cast<INT_PTR>(hbrBkgnd);
+			}
 		}
 		case WM_ERASEBKGND:
 	        return 0;
@@ -366,15 +376,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	    {
 			RECT rc;
 			hdc = BeginPaint(hWnd, &ps);
-					
+			
+			// set proper bg color
 			GetClientRect(hWnd, &rc);
 			SetDCBrushColor(hdc, DarkThemeEnabled ? darkBkColor : lightBkColor);
 			FillRect(hdc, &rc, (HBRUSH)GetStockObject(DC_BRUSH));
+			
+			// draw logo and strings
+			Gdiplus::Graphics graphics(hdc);
+			if (!Eaow)
+				DrawStrings(hWnd, graphics);
 
-	        Gdiplus::Graphics graphics(hdc);
-			DrawStrings(hWnd, graphics, hInst, rc);
+			DrawLogo(hWnd, graphics, hInst);
+
+			// clean up
 			EndPaint(hWnd, &ps);
 			DeleteObject(&rc);
+			DeleteObject(&graphics);
 			break;
 		}
 		case WM_DESTROY:
@@ -388,6 +406,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	}
     return 0;
 }
+
 INT_PTR CALLBACK EulaProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	HWND hwndEdit{};
@@ -401,7 +420,9 @@ INT_PTR CALLBACK EulaProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			UpdateEulaRichEdtLayoutForDpi(hwndEdit);
 			UpdateEulaButtonLayoutForDpi(GetDlgItem(hDlg, IDOK));
 			DarkTitleBar(hDlg);
-			ApplyMica(hDlg);
+			if (DarkThemeEnabled)
+				ApplyMica(hDlg);
+
 			UpdateWindow(hDlg);
 			break;
 		}
@@ -416,6 +437,7 @@ INT_PTR CALLBACK EulaProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					hbrBkgnd = CreateSolidBrush(darkBkColor);
 				return reinterpret_cast<INT_PTR>(hbrBkgnd);
 			}
+			break;
 		}
 		case WM_CTLCOLORDLG:
 		{

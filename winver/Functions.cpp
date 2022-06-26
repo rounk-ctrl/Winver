@@ -4,11 +4,11 @@ int currentMonitorDpi;
 
 wchar_t* convertCharArrayToLPCWSTR(const char* charArray)
 {
-    wchar_t* wString = new wchar_t[200];
-    MultiByteToWideChar(CP_ACP, 0, charArray, -1, wString, 200);
-    return wString;
-    wString = NULL;
-    delete[] wString;
+	wchar_t* wString = new wchar_t[200];
+	MultiByteToWideChar(CP_ACP, 0, charArray, -1, wString, 200);
+	return wString;
+	wString = NULL;
+	delete[] wString;
 }
 
 BOOL RtlGetVersion(OSVERSIONINFOEX* os) {
@@ -103,9 +103,9 @@ void DoStuffv2()
 		if (error == ERROR_SUCCESS)
 		{
 			_bstr_t verstr(version);
-			std::ostringstream ver;
-			ver << verstr;
-			Owner = convertCharArrayToLPCWSTR(ver.str().c_str());
+			std::ostringstream verstring;
+			verstring << verstr;
+			Owner = convertCharArrayToLPCWSTR(verstring.str().c_str());
 		}
 		else
 		{
@@ -239,26 +239,26 @@ BOOL ApplyMica(HWND hwnd)
 
 BOOL DarkTitleBar(HWND hWnd)
 {
+	if (os.dwBuildNumber < 17763)
+	{
+		return TRUE;
+	}
 	if (DarkThemeEnabled)
 	{
+		MARGINS margins = { -1 };
+		DwmExtendFrameIntoClientArea(hWnd, &margins);
 		if ((os.dwBuildNumber < 18362) && (os.dwBuildNumber >= 17763))
 		{
-			MARGINS margins = { -1 };
-			DwmExtendFrameIntoClientArea(hWnd, &margins);
 			SetPropW(hWnd, L"UseImmersiveDarkModeColors", reinterpret_cast<HANDLE>(static_cast<INT_PTR>(DarkThemeEnabled)));
 			return TRUE;
 		}
 		else if ((os.dwBuildNumber >= 18362) && (os.dwBuildNumber < 19041))
 		{
-			MARGINS margins = { -1 };
-			DwmExtendFrameIntoClientArea(hWnd, &margins);
 			DwmSetWindowAttribute(hWnd, 19, &DarkThemeEnabled, sizeof DarkThemeEnabled);
 			return TRUE;
 		}
 		else if (os.dwBuildNumber >= 19041)
 		{
-			MARGINS margins = { -1 };
-			DwmExtendFrameIntoClientArea(hWnd, &margins);
 			DwmSetWindowAttribute(hWnd, 20, &DarkThemeEnabled, sizeof DarkThemeEnabled);
 			return TRUE;
 		}
@@ -284,7 +284,7 @@ RectF FixedRectF(RectF o)
 	return RectF(X, Y, width, height);
 }
 
-BOOLEAN DrawStrings(HWND hWnd, Graphics& graphics, HINSTANCE hInst, RECT rc)
+BOOLEAN DrawStrings(HWND hWnd, Graphics& graphics)
 {
 	SolidBrush      lightmodetext(Gdiplus::Color(255, 0, 0, 0));
 	SolidBrush      darkmodetext(Gdiplus::Color(255, 255, 255, 255));
@@ -300,14 +300,6 @@ BOOLEAN DrawStrings(HWND hWnd, Graphics& graphics, HINSTANCE hInst, RECT rc)
 	graphics.DrawString(AboutWin, -1, &font, FixedRectF(RectF(45, CopyY, CopyWidth, 80)), NULL, DarkThemeEnabled ? &darkmodetext : &lightmodetext);
 	graphics.DrawString(Owner, -1, &font, FixedPointF(PointF(60, OwnerY)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
 	graphics.DrawString(Organization, -1, &font, FixedPointF(PointF(60, OrganizationY)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-#if BUILD_R11
-	RectF        imgrectF(65, 10, 305, 90);
-	Gdiplus::Bitmap* pBmp = LoadImageFromResource(hInst, MAKEINTRESOURCE(IDB_R11), L"PNG");
-#else
-	Gdiplus::Bitmap* pBmp = LoadImageFromResource(hInst, MAKEINTRESOURCE(IDB_R11), L"PNG");
-	RectF        imgrectF(BitmapX, 15, 350, 67);
-#endif
-	graphics.DrawImage(pBmp, FixedRectF(imgrectF));
 
 	//clean up
 	DeleteObject(&font);
@@ -315,6 +307,15 @@ BOOLEAN DrawStrings(HWND hWnd, Graphics& graphics, HINSTANCE hInst, RECT rc)
 	DeleteObject(&emSize);
 	DeleteObject(&lightmodetext);
 	DeleteObject(&darkmodetext);
+	return TRUE;
+}
+BOOLEAN DrawLogo(HWND hwnd, Graphics& graphics, HINSTANCE hInst)
+{
+	Gdiplus::Bitmap* pBmp = LoadImageFromResource(hInst, MAKEINTRESOURCE(IDB_R11), L"PNG");
+	RectF        imgrectF(BitmapX, 15, 350, 67);
+	graphics.DrawImage(pBmp, FixedRectF(imgrectF));
+
+	DeleteObject(&imgrectF);
 	DeleteObject(&pBmp);
 	return TRUE;
 }
@@ -322,7 +323,7 @@ BOOLEAN DrawStrings(HWND hWnd, Graphics& graphics, HINSTANCE hInst, RECT rc)
 void FixFontForEula(HWND hWnd)
 {
 	int pointSize = 16;
-	int height = MulDiv(pointSize, ::GetDpiForWindow(hWnd), 96);
+	int height = MulDiv(pointSize, GetDpiForWindow(hWnd), 96);
 	HFONT hFont = CreateFont(height, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Segoe UI Variable Small");
 	SendMessage(yes, WM_SETFONT, (LPARAM)hFont, true);
 }
@@ -376,10 +377,10 @@ void SetTxtColor(HWND hWindow, COLORREF clr) {
 void SetupRichEdit(HWND hwndEdit, HWND hDlg, HINSTANCE hInst)
 {
 	hwndEdit = CreateWindowEx(WS_EX_COMPOSITED, MSFTEDIT_CLASS, TEXT("Type here"),
-		ES_MULTILINE | WS_VISIBLE | WS_CHILD | WS_TABSTOP,
-		10, 15, 540, 280,
+		ES_MULTILINE | WS_VISIBLE | WS_CHILD | WS_TABSTOP | ES_AUTOVSCROLL | WS_VSCROLL,
+		10, 15, 580, 280,
 		hDlg, (HMENU)230, hInst, NULL);
-	SendMessage(hwndEdit, EM_SETREADONLY, TRUE, 0);
+	//SendMessage(hwndEdit, EM_SETREADONLY, TRUE, 0);
 	FillRichEditFromFile(hwndEdit, L"C:\\windows\\system32\\license.rtf");
 	if (DarkThemeEnabled)
 	{
@@ -468,4 +469,5 @@ BOOL CustomDrawButton(LPARAM lParam, HWND hWnd)
 			return CDRF_DODEFAULT;
 		}
 	}
+	return CDRF_DODEFAULT;
 }

@@ -16,7 +16,6 @@ enum class SystemBackdropType
 };
 typedef void (WINAPI* RtlGetVersion_FUNC) (OSVERSIONINFOEXW*);
 
-wchar_t* convertCharArrayToLPCWSTR(const char* charArray);
 BOOL RtlGetVersion(OSVERSIONINFOEX* os);
 int IsExplorerDarkTheme();
 LONG GetDWORDRegKey(HKEY hKey, const std::wstring& strValueName, DWORD& nValue);
@@ -25,7 +24,8 @@ BOOL ApplyMica(HWND hwnd);
 Gdiplus::Bitmap* LoadImageFromResource(HMODULE hMod, const wchar_t* resid, const wchar_t* restype);
 void DoStuffv2();
 BOOL DarkTitleBar(HWND hWnd);
-BOOLEAN DrawStrings(HWND hWnd, Gdiplus::Graphics& graphics, HINSTANCE hInst, RECT rc);
+BOOLEAN DrawStrings(HWND hWnd, Gdiplus::Graphics& graphics);
+BOOLEAN DrawLogo(HWND hwnd, Gdiplus::Graphics& graphics, HINSTANCE hInst);
 BOOLEAN CreateHwnds(HWND hWnd, HINSTANCE hInst);
 void FixFontForEula(HWND hWnd);
 BOOL FillRichEditFromFile(HWND hwnd, LPCTSTR pszFile);
