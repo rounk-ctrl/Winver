@@ -289,9 +289,8 @@ BOOLEAN DrawStrings(HWND hWnd, Graphics& graphics)
 {
 	SolidBrush      lightmodetext(Gdiplus::Color(255, 0, 0, 0));
 	SolidBrush      darkmodetext(Gdiplus::Color(255, 255, 255, 255));
-	int primaryMonitorDpi = GetDpiForWindow(::GetDesktopWindow());
 	currentMonitorDpi = ::GetDpiForWindow(hWnd);
-	Gdiplus::REAL emSize = 9.0 * currentMonitorDpi / primaryMonitorDpi;
+	Gdiplus::REAL emSize = 9.0 * currentMonitorDpi / 96;
 	FontFamily      fontFamily(L"Segoe UI Variable Small");
 	Gdiplus::Font   font(&fontFamily, emSize);
 	
@@ -315,9 +314,8 @@ BOOLEAN DrawAbout(HWND hWnd, Graphics& graphics)
 {
 	SolidBrush      lightmodetext(Gdiplus::Color(255, 0, 0, 0));
 	SolidBrush      darkmodetext(Gdiplus::Color(255, 255, 255, 255));
-	int primaryMonitorDpi = GetDpiForWindow(::GetDesktopWindow());
 	currentMonitorDpi = ::GetDpiForWindow(hWnd);
-	Gdiplus::REAL emSize = 10.0 * currentMonitorDpi / primaryMonitorDpi;
+	Gdiplus::REAL emSize = 10.0 * currentMonitorDpi / 96;
 	FontFamily      fontFamily(L"Segoe UI Variable Small");
 	Gdiplus::Font   font(&fontFamily, emSize);
 
@@ -453,12 +451,11 @@ BOOL CustomDrawButton(LPARAM lParam, HWND hWnd)
 		Gdiplus::Graphics graphicshdc(item->hdc);
 		SolidBrush      lightmodetext(Gdiplus::Color(255, 0, 0, 0));
 		SolidBrush      darkmodetext(Gdiplus::Color(255, 255, 255, 255));
-		int primaryMonitorDpi = GetDpiForWindow(::GetDesktopWindow());
 		int currentMonitorDpi = ::GetDpiForWindow(hWnd);
 		StringFormat stringFormat;
 		stringFormat.SetAlignment(StringAlignmentCenter);
 		stringFormat.SetLineAlignment(StringAlignmentCenter);
-		Gdiplus::REAL emSize = 9.0 * currentMonitorDpi / primaryMonitorDpi;
+		Gdiplus::REAL emSize = 9.0 * currentMonitorDpi / 96;
 		FontFamily      fontFamily(L"Segoe UI Variable Small");
 		Gdiplus::Font   font(&fontFamily, emSize);
 		if (item->uItemState & CDIS_SELECTED)
