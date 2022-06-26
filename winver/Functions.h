@@ -32,3 +32,5 @@ BOOL FillRichEditFromFile(HWND hwnd, LPCTSTR pszFile);
 void SetupRichEdit(HWND hwndEdit, HWND hDlg, HINSTANCE hInst);
 BOOL GetwinBrandName();
 BOOL CustomDrawButton(LPARAM lParam, HWND hWnd);
+void FixDarkScrollBar();
+BOOLEAN DrawAbout(HWND hWnd, Gdiplus::Graphics& graphics);

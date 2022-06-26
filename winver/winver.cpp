@@ -16,7 +16,7 @@ WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 
 // dark mode stuff
 fnSetPreferredAppMode SetPreferredAppMode;
-fnRefreshImmersiveColorPolicyState RefreshImmersiveColorPolicyState;
+fnOpenNcThemeData OpenNcThemeData;
 fnAllowDarkModeForWindow AllowDarkModeForWindow;
 
 // variables
@@ -33,6 +33,7 @@ LPCWSTR OkButton;
 int DarkThemeEnabled;
 HWND yes;
 HWND button;
+HWND hwndEdit{};
 
 // window size
 int Window_Width;
@@ -259,13 +260,12 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 	DarkThemeEnabled = IsExplorerDarkTheme();
     SetPreferredAppMode = (fnSetPreferredAppMode)GetProcAddress(hUxtheme, MAKEINTRESOURCEA(135));
-    AllowDarkModeForWindow = (fnAllowDarkModeForWindow)GetProcAddress(hUxtheme, MAKEINTRESOURCEA(133));
+	AllowDarkModeForWindow = (fnAllowDarkModeForWindow)GetProcAddress(hUxtheme, MAKEINTRESOURCEA(133));
+	OpenNcThemeData = (fnOpenNcThemeData)GetProcAddress(hUxtheme, MAKEINTRESOURCEA(49));
     FreeLibrary(hUxtheme);
 
-    if (DarkThemeEnabled)
-    {
-        SetPreferredAppMode(PreferredAppMode::AllowDark);
-    }
+	SetPreferredAppMode(PreferredAppMode::AllowDark);
+	FixDarkScrollBar();
 
     hWnd = CreateWindowW(szWindowClass, title, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, hInstance, nullptr);
 
@@ -326,7 +326,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				SendMessage(hWnd, WM_DESTROY, 0, 0);
 			}
-			else if ((LOWORD(wParam) == ID_R))
+			else if ((LOWORD(wParam) == ID_R) && !Eaow)
 			{
 				Eaow = TRUE;
 				InvalidateRect(hWnd, NULL, FALSE);
@@ -386,6 +386,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			Gdiplus::Graphics graphics(hdc);
 			if (!Eaow)
 				DrawStrings(hWnd, graphics);
+			else
+				DrawAbout(hWnd, graphics);
 
 			DrawLogo(hWnd, graphics, hInst);
 
@@ -393,12 +395,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			EndPaint(hWnd, &ps);
 			DeleteObject(&rc);
 			DeleteObject(&graphics);
-			break;
-		}
-		case WM_DESTROY:
 			DeleteObject(&hdc);
 			DeleteObject(&ps);
 			DeleteObject(&brush);
+			break;
+		}
+		case WM_DESTROY:
 			PostQuitMessage(0);
 			break;
 		default:
@@ -409,8 +411,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 INT_PTR CALLBACK EulaProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	HWND hwndEdit{};
-	UNREFERENCED_PARAMETER(lParam);
 	switch (message)
 	{
 		case WM_INITDIALOG:
@@ -419,9 +419,14 @@ INT_PTR CALLBACK EulaProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			SetupRichEdit(hwndEdit, hDlg, hInst);
 			UpdateEulaRichEdtLayoutForDpi(hwndEdit);
 			UpdateEulaButtonLayoutForDpi(GetDlgItem(hDlg, IDOK));
+			SetWindowTheme(GetDlgItem(hDlg, IDOK), L"Explorer", nullptr);
 			DarkTitleBar(hDlg);
 			if (DarkThemeEnabled)
+			{
 				ApplyMica(hDlg);
+				AllowDarkModeForWindow(GetDlgItem(hDlg, IDOK), true);
+				SendMessageW(GetDlgItem(hDlg, IDOK), WM_THEMECHANGED, 0, 0);
+			}
 
 			UpdateWindow(hDlg);
 			break;

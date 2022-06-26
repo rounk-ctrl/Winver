@@ -52,6 +52,9 @@ using fnShouldSystemUseDarkMode = bool (WINAPI*)(); // ordinal 138
 using fnSetPreferredAppMode = PreferredAppMode(WINAPI*)(PreferredAppMode appMode); // ordinal 135, in 1903
 using fnIsDarkModeAllowedForApp = bool (WINAPI*)(); // ordinal 
 
+extern fnAllowDarkModeForWindow AllowDarkModeForWindow;
+extern fnOpenNcThemeData OpenNcThemeData;
+
 // Dark mode text and background color
 constexpr COLORREF darkBkColor = 0x010000;
 constexpr COLORREF darkTextColor = 0xFFFFFF;

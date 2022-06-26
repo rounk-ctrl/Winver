@@ -1,4 +1,5 @@
 #include "Functions.h"
+#include "IatHook.h"
 using namespace Gdiplus;
 int currentMonitorDpi;
 
@@ -309,6 +310,27 @@ BOOLEAN DrawStrings(HWND hWnd, Graphics& graphics)
 	DeleteObject(&darkmodetext);
 	return TRUE;
 }
+
+BOOLEAN DrawAbout(HWND hWnd, Graphics& graphics)
+{
+	SolidBrush      lightmodetext(Gdiplus::Color(255, 0, 0, 0));
+	SolidBrush      darkmodetext(Gdiplus::Color(255, 255, 255, 255));
+	int primaryMonitorDpi = GetDpiForWindow(::GetDesktopWindow());
+	currentMonitorDpi = ::GetDpiForWindow(hWnd);
+	Gdiplus::REAL emSize = 10.0 * currentMonitorDpi / primaryMonitorDpi;
+	FontFamily      fontFamily(L"Segoe UI Variable Small");
+	Gdiplus::Font   font(&fontFamily, emSize);
+
+	graphics.DrawString(L"Hi, this page is a placeholder for now :)", -1, &font, FixedPointF(PointF(60, 150)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+
+	//clean up
+	DeleteObject(&font);
+	DeleteObject(&fontFamily);
+	DeleteObject(&emSize);
+	DeleteObject(&lightmodetext);
+	DeleteObject(&darkmodetext);
+	return TRUE;
+}
 BOOLEAN DrawLogo(HWND hwnd, Graphics& graphics, HINSTANCE hInst)
 {
 	Gdiplus::Bitmap* pBmp = LoadImageFromResource(hInst, MAKEINTRESOURCE(IDB_R11), L"PNG");
@@ -330,8 +352,9 @@ void FixFontForEula(HWND hWnd)
 
 BOOLEAN CreateHwnds(HWND hWnd, HINSTANCE hInst)
 {
-	button = CreateWindow(L"button", L"", WS_CHILD | WS_TABSTOP | WS_VISIBLE , 0, 0, 0, 0, hWnd, (HMENU)199, hInst, NULL);
+	button = CreateWindow(L"button", L"", WS_CHILD | WS_TABSTOP | WS_VISIBLE, 0, 0, 0, 0, hWnd, (HMENU)199, hInst, NULL);
 	SetWindowTheme(button, L"Explorer", nullptr);
+	AllowDarkModeForWindow(button, true);
 	SendMessageW(button, WM_THEMECHANGED, 0, 0);
 	CString eulatxt(MAKEINTRESOURCE(IDS_TEXT_EULA));
 	yes = CreateWindowExW(WS_EX_COMPOSITED, WC_LINK, eulatxt, WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 0, 0, hWnd, (HMENU)200, hInst, NULL);
@@ -380,7 +403,7 @@ void SetupRichEdit(HWND hwndEdit, HWND hDlg, HINSTANCE hInst)
 		ES_MULTILINE | WS_VISIBLE | WS_CHILD | WS_TABSTOP | ES_AUTOVSCROLL | WS_VSCROLL,
 		10, 15, 580, 280,
 		hDlg, (HMENU)230, hInst, NULL);
-	//SendMessage(hwndEdit, EM_SETREADONLY, TRUE, 0);
+	SendMessage(hwndEdit, EM_SETREADONLY, TRUE, 0);
 	FillRichEditFromFile(hwndEdit, L"C:\\windows\\system32\\license.rtf");
 	if (DarkThemeEnabled)
 	{
@@ -470,4 +493,31 @@ BOOL CustomDrawButton(LPARAM lParam, HWND hWnd)
 		}
 	}
 	return CDRF_DODEFAULT;
+}
+
+void FixDarkScrollBar()
+{
+	HMODULE hComctl = LoadLibraryExW(L"comctl32.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+	if (hComctl)
+	{
+		auto addr = FindDelayLoadThunkInModule(hComctl, "uxtheme.dll", 49); // OpenNcThemeData
+		if (addr)
+		{
+			DWORD oldProtect;
+			if (VirtualProtect(addr, sizeof(IMAGE_THUNK_DATA), PAGE_READWRITE, &oldProtect))
+			{
+				auto MyOpenThemeData = [](HWND hWnd, LPCWSTR classList) -> HTHEME {
+					if (wcscmp(classList, L"ScrollBar") == 0)
+					{
+						hWnd = nullptr;
+						classList = L"Explorer::ScrollBar";
+					}
+					return OpenNcThemeData(hWnd, classList);
+				};
+
+				addr->u1.Function = reinterpret_cast<ULONG_PTR>(static_cast<fnOpenNcThemeData>(MyOpenThemeData));
+				VirtualProtect(addr, sizeof(IMAGE_THUNK_DATA), oldProtect, &oldProtect);
+			}
+		}
+	}
 }

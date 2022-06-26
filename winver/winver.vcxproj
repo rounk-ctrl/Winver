@@ -148,6 +148,7 @@
     <ClInclude Include="DpiHelpers.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Functions.h" />
+    <ClInclude Include="IatHook.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="winver.h" />
