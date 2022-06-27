@@ -2,9 +2,9 @@ name: Winver
 
 on:
   push:
-    branches: [ "win32-master" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "win32-master" ]
+    branches: [ "main" ]
 
 permissions:
   contents: read
