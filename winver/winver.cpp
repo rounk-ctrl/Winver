@@ -366,7 +366,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case WM_ERASEBKGND:
 	        return 0;
 		case WM_PAINT:
-	    {
+		{
 			RECT rc;
 			hdc = BeginPaint(hWnd, &ps);
 			
