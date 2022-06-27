@@ -27,7 +27,7 @@ BOOL DarkTitleBar(HWND hWnd);
 BOOLEAN DrawStrings(HWND hWnd, Gdiplus::Graphics& graphics);
 BOOLEAN DrawLogo(HWND hwnd, Gdiplus::Graphics& graphics, HINSTANCE hInst);
 BOOLEAN CreateHwnds(HWND hWnd, HINSTANCE hInst);
-void FixFontForEula(HWND hWnd);
+void FixFont(HWND hWnd);
 BOOL FillRichEditFromFile(HWND hwnd, LPCTSTR pszFile);
 void SetupRichEdit(HWND hwndEdit, HWND hDlg, HINSTANCE hInst);
 BOOL GetwinBrandName();

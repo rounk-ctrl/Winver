@@ -267,85 +267,36 @@ BOOL DarkTitleBar(HWND hWnd)
 	return FALSE;
 }
 
-PointF FixedPointF(PointF o)
-{
-	int iDpi = currentMonitorDpi;
-	REAL X = MulDiv(o.X, iDpi, 96);
-	REAL Y = MulDiv(o.Y, iDpi, 96);
-	return PointF(X, Y);
-}
-
-RectF FixedRectF(RectF o)
-{
-	int iDpi = currentMonitorDpi;
-	REAL X = MulDiv(o.X, iDpi, 96);
-	REAL Y = MulDiv(o.Y, iDpi, 96);
-	REAL width = MulDiv(o.Width, iDpi, 96);
-	REAL height = MulDiv(o.Height, iDpi, 96);
-	return RectF(X, Y, width, height);
-}
-
-BOOLEAN DrawStrings(HWND hWnd, Graphics& graphics)
-{
-	SolidBrush      lightmodetext(Gdiplus::Color(255, 0, 0, 0));
-	SolidBrush      darkmodetext(Gdiplus::Color(255, 255, 255, 255));
-	currentMonitorDpi = ::GetDpiForWindow(hWnd);
-	Gdiplus::REAL emSize = 9.0 * currentMonitorDpi / 96;
-	FontFamily      fontFamily(L"Segoe UI Variable Small");
-	Gdiplus::Font   font(&fontFamily, emSize);
-	
-	graphics.DrawString(MsWin, -1, &font, FixedPointF(PointF(45, 100)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-	graphics.DrawString(Version.c_str(), -1, &font, FixedPointF(PointF(45, 118)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-	graphics.DrawString(CopyRight, -1, &font, FixedRectF(RectF(45, 136, 385, 40)), NULL, DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-	graphics.DrawString(AboutWin, -1, &font, FixedRectF(RectF(45, CopyY, CopyWidth, 80)), NULL, DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-	graphics.DrawString(Owner, -1, &font, FixedPointF(PointF(60, OwnerY)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-	graphics.DrawString(Organization, -1, &font, FixedPointF(PointF(60, OrganizationY)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-
-	//clean up
-	DeleteObject(&font);
-	DeleteObject(&fontFamily);
-	DeleteObject(&emSize);
-	DeleteObject(&lightmodetext);
-	DeleteObject(&darkmodetext);
-	return TRUE;
-}
-
-BOOLEAN DrawAbout(HWND hWnd, Graphics& graphics)
-{
-	SolidBrush      lightmodetext(Gdiplus::Color(255, 0, 0, 0));
-	SolidBrush      darkmodetext(Gdiplus::Color(255, 255, 255, 255));
-	currentMonitorDpi = ::GetDpiForWindow(hWnd);
-	Gdiplus::REAL emSize = 10.0 * currentMonitorDpi / 96;
-	FontFamily      fontFamily(L"Segoe UI Variable Small");
-	Gdiplus::Font   font(&fontFamily, emSize);
-
-	graphics.DrawString(L"Hi, this page is a placeholder for now :)", -1, &font, FixedPointF(PointF(60, 150)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-
-	//clean up
-	DeleteObject(&font);
-	DeleteObject(&fontFamily);
-	DeleteObject(&emSize);
-	DeleteObject(&lightmodetext);
-	DeleteObject(&darkmodetext);
-	return TRUE;
-}
-BOOLEAN DrawLogo(HWND hwnd, Graphics& graphics, HINSTANCE hInst)
-{
-	Gdiplus::Bitmap* pBmp = LoadImageFromResource(hInst, MAKEINTRESOURCE(IDB_R11), L"PNG");
-	RectF        imgrectF(BitmapX, 15, 350, 67);
-	graphics.DrawImage(pBmp, FixedRectF(imgrectF));
-
-	DeleteObject(&imgrectF);
-	DeleteObject(&pBmp);
-	return TRUE;
-}
-
-void FixFontForEula(HWND hWnd)
+void FixFont(HWND hWnd)
 {
 	int pointSize = 16;
 	int height = MulDiv(pointSize, GetDpiForWindow(hWnd), 96);
 	HFONT hFont = CreateFont(height, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Segoe UI Variable Small");
 	SendMessage(yes, WM_SETFONT, (LPARAM)hFont, true);
+}
+
+BOOLEAN CreateTextWnd(HWND hWnd, HINSTANCE hInst, LPCWSTR text, int x, int y, int width, int height)
+{
+	HWND ie = CreateWindow(L"static", text, WS_CHILD | SS_LEFT | WS_VISIBLE, 0, 0, 0, 0, hWnd, (HMENU)1, hInst, NULL);
+	if (ie)
+	{
+		int iDpi = GetDpiForWindow(hWnd);
+		int dpiScaledX = MulDiv(x, iDpi, 96);
+		int dpiScaledY = MulDiv(y, iDpi, 96);
+		int dpiScaledWidth = MulDiv(width, iDpi, 96);
+		int dpiScaledHeight = MulDiv(height, iDpi, 96);
+		BOOL ok = SetWindowPos(ie, hWnd, dpiScaledX, dpiScaledY, dpiScaledWidth, dpiScaledHeight, SWP_NOZORDER | SWP_NOACTIVATE);
+		if (ok)
+		{
+			int pointSize = 16;
+			int height = MulDiv(pointSize, GetDpiForWindow(hWnd), 96);
+			HFONT hFont = CreateFont(height, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Segoe UI Variable Small");
+			SendMessage(ie, WM_SETFONT, (LPARAM)hFont, true);
+			return TRUE;
+		}
+		return FALSE;
+	}
+	return FALSE;
 }
 
 BOOLEAN CreateHwnds(HWND hWnd, HINSTANCE hInst)
@@ -354,9 +305,18 @@ BOOLEAN CreateHwnds(HWND hWnd, HINSTANCE hInst)
 	SetWindowTheme(button, L"Explorer", nullptr);
 	AllowDarkModeForWindow(button, true);
 	SendMessageW(button, WM_THEMECHANGED, 0, 0);
+
+	// strings
+	CreateTextWnd(hWnd, hInst, MsWin, 45, 100, 400, 20);
+	CreateTextWnd(hWnd, hInst, Version.c_str(), 45, 118, 400, 20);
+	CreateTextWnd(hWnd, hInst, CopyRight, 45, 136, 385, 40);
+	CreateTextWnd(hWnd, hInst, AboutWin, 45, CopyY, CopyWidth, 80);
+	CreateTextWnd(hWnd, hInst, Owner, 60, OwnerY, 400, 20);
+	CreateTextWnd(hWnd, hInst, Organization, 60, OrganizationY, 400, 20);
+
 	CString eulatxt(MAKEINTRESOURCE(IDS_TEXT_EULA));
-	yes = CreateWindowExW(WS_EX_COMPOSITED, WC_LINK, eulatxt, WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 0, 0, hWnd, (HMENU)200, hInst, NULL);
-	FixFontForEula(hWnd);
+	yes = CreateWindowEx(WS_EX_COMPOSITED, WC_LINK, eulatxt, WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 0, 0, hWnd, (HMENU)200, hInst, NULL);
+	FixFont(hWnd);
 	SendMessage(hWnd, DM_SETDEFID, (WPARAM)button, 0);
 	SetFocus(button);
 	UpdateWindow(hWnd);

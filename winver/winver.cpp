@@ -180,6 +180,8 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 	CString buttontxt(MAKEINTRESOURCE(IDS_BUTTON));
 	OkButton = buttontxt;
 
+	DarkThemeEnabled = IsExplorerDarkTheme();
+
 	// registers class
     MyRegisterClass(hInstance);
 
@@ -245,7 +247,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_R11));
 	wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_R11));
     wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
-    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wcex.hbrBackground = (HBRUSH)(DarkThemeEnabled ? BLACK_BRUSH : COLOR_WINDOW + 1);
     wcex.lpszMenuName = NULL;
     wcex.lpszClassName = szWindowClass;
 
@@ -258,7 +260,6 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
     hInst = hInstance; // Store instance handle in our global variable
 
-	DarkThemeEnabled = IsExplorerDarkTheme();
     SetPreferredAppMode = (fnSetPreferredAppMode)GetProcAddress(hUxtheme, MAKEINTRESOURCEA(135));
 	AllowDarkModeForWindow = (fnAllowDarkModeForWindow)GetProcAddress(hUxtheme, MAKEINTRESOURCEA(133));
 	OpenNcThemeData = (fnOpenNcThemeData)GetProcAddress(hUxtheme, MAKEINTRESOURCEA(49));
@@ -311,7 +312,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				SWP_NOACTIVATE | SWP_NOZORDER);
 			UpdateButtonLayoutForDpi(button, ButtonX, ButtonY);
 			UpdateEulaLayoutForDpi(yes, EulaY, EulaWidth);
-			FixFontForEula(hWnd);
+			FixFont(hWnd);
 			break;
 		}
 		case WM_COMMAND:
@@ -325,13 +326,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			else if ((LOWORD(wParam) == ID_RETURN) || (LOWORD(wParam) == ID_ESC))
 			{
 				SendMessage(hWnd, WM_DESTROY, 0, 0);
-			}
-			else if ((LOWORD(wParam) == ID_R) && !Eaow)
-			{
-				Eaow = TRUE;
-				InvalidateRect(hWnd, NULL, FALSE);
-				UpdateWindow(hWnd);
-				DestroyWindow(yes);
 			}
 			break;
 		}
@@ -384,12 +378,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			
 			// draw logo and strings
 			Gdiplus::Graphics graphics(hdc);
-			if (!Eaow)
-				DrawStrings(hWnd, graphics);
-			else
-				DrawAbout(hWnd, graphics);
 
-			DrawLogo(hWnd, graphics, hInst);
+			Gdiplus::Bitmap* pBmp = LoadImageFromResource(hInst, MAKEINTRESOURCE(IDB_R11), L"PNG");
+			RectF        imgrectF(BitmapX, 15, 350, 67);
+			graphics.DrawImage(pBmp, FixedRectF(imgrectF, hWnd));
 
 			// clean up
 			EndPaint(hWnd, &ps);
