@@ -61,12 +61,3 @@ void ScaleWindow(HWND hWnd, int Window_Width, int Window_Height)
 	AdjustWindowRectExForDpi(&scaled_size, WS_OVERLAPPEDWINDOW, false, 0, dpi);
 	SetWindowPos(hWnd, nullptr, CW_USEDEFAULT, CW_USEDEFAULT, scaled_size.right - scaled_size.left, scaled_size.bottom - scaled_size.top, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
 }
-Gdiplus::RectF FixedRectF(Gdiplus::RectF o, HWND hWnd)
-{
-	int iDpi = GetDpiForWindow(hWnd);
-	Gdiplus::REAL X = MulDiv(o.X, iDpi, 96);
-	Gdiplus::REAL Y = MulDiv(o.Y, iDpi, 96);
-	Gdiplus::REAL width = MulDiv(o.Width, iDpi, 96);
-	Gdiplus::REAL height = MulDiv(o.Height, iDpi, 96);
-	return Gdiplus::RectF(X, Y, width, height);
-}
