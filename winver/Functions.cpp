@@ -1,5 +1,6 @@
 #include "Functions.h"
 #include "IatHook.h"
+#include "DpiHelpers.h"
 using namespace Gdiplus;
 int currentMonitorDpi;
 
@@ -287,6 +288,8 @@ RectF FixedRectF(RectF o)
 
 BOOLEAN DrawStrings(HWND hWnd, Graphics& graphics)
 {
+	Gdiplus::SolidBrush      lightmodetext(Gdiplus::Color(255, 0, 0, 0));
+	Gdiplus::SolidBrush      darkmodetext(Gdiplus::Color(255, 255, 255, 255));
 	currentMonitorDpi = GetDpiForWindow(hWnd);
 	Gdiplus::REAL emSize = 9.0;
 	FontFamily      fontFamily(L"Segoe UI Variable Small");
@@ -310,6 +313,8 @@ BOOLEAN DrawStrings(HWND hWnd, Graphics& graphics)
 
 BOOLEAN DrawAbout(HWND hWnd, Graphics& graphics)
 {
+	Gdiplus::SolidBrush      lightmodetext(Gdiplus::Color(255, 0, 0, 0));
+	Gdiplus::SolidBrush      darkmodetext(Gdiplus::Color(255, 255, 255, 255));
 	currentMonitorDpi = GetDpiForWindow(hWnd);
 	Gdiplus::REAL emSize = 10.0;
 	FontFamily      fontFamily(L"Segoe UI Variable Small");
@@ -325,6 +330,7 @@ BOOLEAN DrawAbout(HWND hWnd, Graphics& graphics)
 	DeleteObject(&darkmodetext);
 	return TRUE;
 }
+
 BOOLEAN DrawLogo(HWND hwnd, Graphics& graphics, HINSTANCE hInst)
 {
 	Gdiplus::Bitmap* pBmp = LoadImageFromResource(hInst, MAKEINTRESOURCE(IDB_R11), L"PNG");
@@ -336,13 +342,6 @@ BOOLEAN DrawLogo(HWND hwnd, Graphics& graphics, HINSTANCE hInst)
 	return TRUE;
 }
 
-void FixFontForEula(HWND hWnd)
-{
-	int pointSize = 16;
-	int height = MulDiv(pointSize, GetDpiForWindow(hWnd), 96);
-	HFONT hFont = CreateFont(height, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Segoe UI Variable Small");
-	SendMessage(yes, WM_SETFONT, (LPARAM)hFont, true);
-}
 
 BOOLEAN CreateHwnds(HWND hWnd, HINSTANCE hInst)
 {
@@ -351,8 +350,8 @@ BOOLEAN CreateHwnds(HWND hWnd, HINSTANCE hInst)
 	AllowDarkModeForWindow(button, true);
 	SendMessageW(button, WM_THEMECHANGED, 0, 0);
 	CString eulatxt(MAKEINTRESOURCE(IDS_TEXT_EULA));
-	yes = CreateWindowExW(WS_EX_COMPOSITED, WC_LINK, eulatxt, WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 0, 0, hWnd, (HMENU)200, hInst, NULL);
-	FixFontForEula(hWnd);
+	yes = CreateWindowEx(WS_EX_COMPOSITED, WC_LINK, eulatxt, WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 0, 0, hWnd, (HMENU)200, hInst, NULL);
+	FixFont(hWnd, yes);
 	SendMessage(hWnd, DM_SETDEFID, (WPARAM)button, 0);
 	SetFocus(button);
 	UpdateWindow(hWnd);
@@ -393,10 +392,11 @@ void SetTxtColor(HWND hWindow, COLORREF clr) {
 
 void SetupRichEdit(HWND hwndEdit, HWND hDlg, HINSTANCE hInst)
 {
-	hwndEdit = CreateWindowEx(WS_EX_COMPOSITED, MSFTEDIT_CLASS, TEXT("Type here"),
+	hwndEdit = CreateWindowEx(WS_EX_COMPOSITED, MSFTEDIT_CLASS, TEXT(""),
 		ES_MULTILINE | WS_VISIBLE | WS_CHILD | WS_TABSTOP | ES_AUTOVSCROLL | WS_VSCROLL,
-		10, 15, 580, 280,
+		0, 0, 0, 0,
 		hDlg, (HMENU)230, hInst, NULL);
+	UpdateLayoutForDpi(hwndEdit, 10, 15, 580, 280);
 	SendMessage(hwndEdit, EM_SETREADONLY, TRUE, 0);
 	FillRichEditFromFile(hwndEdit, L"C:\\windows\\system32\\license.rtf");
 	if (DarkThemeEnabled)
@@ -445,6 +445,8 @@ BOOL CustomDrawButton(LPARAM lParam, HWND hWnd)
 		LPNMCUSTOMDRAW item = (LPNMCUSTOMDRAW)some_item;
 		SetBkMode(item->hdc, TRANSPARENT);
 		Gdiplus::Graphics graphicshdc(item->hdc);
+		Gdiplus::SolidBrush      lightmodetext(Gdiplus::Color(255, 0, 0, 0));
+		Gdiplus::SolidBrush      darkmodetext(Gdiplus::Color(255, 255, 255, 255));
 		StringFormat stringFormat;
 		stringFormat.SetAlignment(StringAlignmentCenter);
 		stringFormat.SetLineAlignment(StringAlignmentCenter);

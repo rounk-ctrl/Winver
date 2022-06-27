@@ -62,7 +62,3 @@ constexpr COLORREF darkTextColor = 0xFFFFFF;
 constexpr COLORREF lightBkColor = 0xFFFFFF;
 constexpr COLORREF lightTextColor = 0x000000;
 static HBRUSH hbrBkgnd = nullptr;
-
-Gdiplus::SolidBrush      lightmodetext(Gdiplus::Color(255, 0, 0, 0));
-Gdiplus::SolidBrush      darkmodetext(Gdiplus::Color(255, 255, 255, 255));
-

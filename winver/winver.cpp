@@ -50,7 +50,6 @@ int BitmapX;
 
 BOOL Eaow = FALSE;
 
-
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
@@ -296,23 +295,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case WM_CREATE:
 		{
 			CreateHwnds(hWnd, hInst);
-			UpdateButtonLayoutForDpi(button, ButtonX, ButtonY);
-			UpdateEulaLayoutForDpi(yes, EulaY, EulaWidth);
+			UpdateLayoutForDpi(button, ButtonX, ButtonY, 70, 23);
+			UpdateLayoutForDpi(yes, 47, EulaY, EulaWidth, 40);
 			break;
 		}
 		case WM_DPICHANGED:
 		{
-			auto rect = *reinterpret_cast<RECT *>(lParam);
-			SetWindowPos(hWnd,
-				0, // No relative window
-				rect.left,
-				rect.top,
-				rect.right - rect.left,
-				rect.bottom - rect.top,
-				SWP_NOACTIVATE | SWP_NOZORDER);
-			UpdateButtonLayoutForDpi(button, ButtonX, ButtonY);
-			UpdateEulaLayoutForDpi(yes, EulaY, EulaWidth);
-			FixFontForEula(hWnd);
+			UpdateWindowSize(hWnd, lParam);
+			UpdateLayoutForDpi(button, ButtonX, ButtonY, 70, 23);
+			UpdateLayoutForDpi(yes, 47, EulaY, EulaWidth, 40);
+			FixFont(hWnd, yes);
 			break;
 		}
 		case WM_COMMAND:
@@ -418,8 +410,8 @@ INT_PTR CALLBACK EulaProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			ScaleDialog(hDlg);
 			SetupRichEdit(hwndEdit, hDlg, hInst);
-			UpdateEulaRichEdtLayoutForDpi(hwndEdit);
-			UpdateEulaButtonLayoutForDpi(GetDlgItem(hDlg, IDOK));
+			UpdateLayoutForDpi(hwndEdit, 10, 15, 580, 280);
+			UpdateLayoutForDpi(GetDlgItem(hDlg, IDOK), 525, 320, 70, 23);
 			SetWindowTheme(GetDlgItem(hDlg, IDOK), L"Explorer", nullptr);
 			DarkTitleBar(hDlg);
 			if (DarkThemeEnabled)

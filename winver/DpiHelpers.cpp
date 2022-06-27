@@ -1,22 +1,23 @@
 #include "DpiHelpers.h"
 
-void UpdateEulaRichEdtLayoutForDpi(HWND hwnd)
+BOOLEAN FixFont(HWND hWnd, HWND yes)
 {
-	int iDpi = ::GetDpiForWindow(hwnd);
-	int dpiScaledX = MulDiv(10, iDpi, 96);
-	int dpiScaledY = MulDiv(15, iDpi, 96);
-	int dpiScaledWidth = MulDiv(585, iDpi, 96);
-	int dpiScaledHeight = MulDiv(295, iDpi, 96);
-	SetWindowPos(hwnd, hwnd, dpiScaledX, dpiScaledY, dpiScaledWidth, dpiScaledHeight, SWP_NOZORDER | SWP_NOACTIVATE);
+	int pointSize = 16;
+	int height = MulDiv(pointSize, GetDpiForWindow(hWnd), 96);
+	HFONT hFont = CreateFont(height, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Segoe UI Variable Small");
+	SendMessage(yes, WM_SETFONT, (LPARAM)hFont, true);
+	return TRUE;
 }
-void UpdateEulaButtonLayoutForDpi(HWND hWnd)
+void UpdateWindowSize(HWND hWnd, LPARAM lParam)
 {
-	int iDpi = ::GetDpiForWindow(hWnd);
-	int dpiScaledX = MulDiv(525, iDpi, 96);
-	int dpiScaledY = MulDiv(320, iDpi, 96);
-	int dpiScaledWidth = MulDiv(70, iDpi, 96);
-	int dpiScaledHeight = MulDiv(23, iDpi, 96);
-	SetWindowPos(hWnd, hWnd, dpiScaledX, dpiScaledY, dpiScaledWidth, dpiScaledHeight, SWP_NOZORDER | SWP_NOACTIVATE);
+	auto rect = *reinterpret_cast<RECT *>(lParam);
+	SetWindowPos(hWnd,
+		0, // No relative window
+		rect.left,
+		rect.top,
+		rect.right - rect.left,
+		rect.bottom - rect.top,
+		SWP_NOACTIVATE | SWP_NOZORDER);
 }
 void ScaleDialog(HWND hDlg)
 {
@@ -31,24 +32,16 @@ void ScaleDialog(HWND hDlg)
 	SetWindowPos(hDlg, nullptr, CW_USEDEFAULT, CW_USEDEFAULT, scaled_size.right - scaled_size.left, scaled_size.bottom - scaled_size.top, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
 }
 
-void UpdateButtonLayoutForDpi(HWND hWnd, int ButtonX, int ButtonY)
+void UpdateLayoutForDpi(HWND hWnd, int x, int y, int width, int height)
 {
-	int iDpi = ::GetDpiForWindow(hWnd);
-	int dpiScaledX = MulDiv(ButtonX, iDpi, 96);
-	int dpiScaledY = MulDiv(ButtonY, iDpi, 96);
-	int dpiScaledWidth = MulDiv(70, iDpi, 96);
-	int dpiScaledHeight = MulDiv(23, iDpi, 96);
+	int iDpi = GetDpiForWindow(hWnd);
+	int dpiScaledX = MulDiv(x, iDpi, 96);
+	int dpiScaledY = MulDiv(y, iDpi, 96);
+	int dpiScaledWidth = MulDiv(width, iDpi, 96);
+	int dpiScaledHeight = MulDiv(height, iDpi, 96);
 	SetWindowPos(hWnd, hWnd, dpiScaledX, dpiScaledY, dpiScaledWidth, dpiScaledHeight, SWP_NOZORDER | SWP_NOACTIVATE);
 }
-void UpdateEulaLayoutForDpi(HWND hWnd, int EulaY, int EulaWidth)
-{
-	int iDpi = ::GetDpiForWindow(hWnd);
-	int dpiScaledX = MulDiv(47, iDpi, 96);
-	int dpiScaledY = MulDiv(EulaY, iDpi, 96);
-	int dpiScaledWidth = MulDiv(EulaWidth, iDpi, 96);
-	int dpiScaledHeight = MulDiv(40, iDpi, 96);
-	SetWindowPos(hWnd, hWnd, dpiScaledX, dpiScaledY, dpiScaledWidth, dpiScaledHeight, SWP_NOZORDER | SWP_NOACTIVATE);
-}
+
 void ScaleWindow(HWND hWnd, int Window_Width, int Window_Height)
 {
 	UINT dpi = GetDpiForWindow(hWnd);

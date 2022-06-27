@@ -1,10 +1,8 @@
 #pragma once
 #include "framework.h"
-#include "winver.h"
 
-void UpdateEulaRichEdtLayoutForDpi(HWND hwnd);
-void UpdateEulaButtonLayoutForDpi(HWND hWnd);
+void UpdateWindowSize(HWND hWnd, LPARAM lParam);
+BOOLEAN FixFont(HWND hWnd, HWND yes);
 void ScaleDialog(HWND hDlg);
-void UpdateButtonLayoutForDpi(HWND hWnd, int ButtonX, int ButtonY);
-void UpdateEulaLayoutForDpi(HWND hWnd, int EulaY, int EulaWidth);
+void UpdateLayoutForDpi(HWND hWnd, int x, int y, int width, int height);
 void ScaleWindow(HWND hWnd, int Window_Width, int Window_Height);
