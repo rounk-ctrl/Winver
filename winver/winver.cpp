@@ -270,9 +270,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     hWnd = CreateWindowW(szWindowClass, title, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, hInstance, nullptr);
 
 	if (!hWnd)
-	{
 		return FALSE;
-	}
 
 	ScaleWindow(hWnd, Window_Width, Window_Height);
     SetWindowLong(hWnd, GWL_STYLE, GetWindowLong(hWnd, GWL_STYLE) & ~WS_MINIMIZEBOX & ~WS_MAXIMIZEBOX &  ~WS_SIZEBOX);

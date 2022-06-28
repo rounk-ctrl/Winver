@@ -2,7 +2,7 @@
 #include "IatHook.h"
 #include "DpiHelpers.h"
 using namespace Gdiplus;
-int currentMonitorDpi;
+int dpi;
 
 wchar_t* convertCharArrayToLPCWSTR(const char* charArray)
 {
@@ -268,39 +268,21 @@ BOOL DarkTitleBar(HWND hWnd)
 	return FALSE;
 }
 
-PointF FixedPointF(PointF o)
-{
-	int iDpi = currentMonitorDpi;
-	REAL X = MulDiv(o.X, iDpi, 96);
-	REAL Y = MulDiv(o.Y, iDpi, 96);
-	return PointF(X, Y);
-}
-
-RectF FixedRectF(RectF o)
-{
-	int iDpi = currentMonitorDpi;
-	REAL X = MulDiv(o.X, iDpi, 96);
-	REAL Y = MulDiv(o.Y, iDpi, 96);
-	REAL width = MulDiv(o.Width, iDpi, 96);
-	REAL height = MulDiv(o.Height, iDpi, 96);
-	return RectF(X, Y, width, height);
-}
-
 BOOLEAN DrawStrings(HWND hWnd, Graphics& graphics)
 {
 	Gdiplus::SolidBrush      lightmodetext(Gdiplus::Color(255, 0, 0, 0));
 	Gdiplus::SolidBrush      darkmodetext(Gdiplus::Color(255, 255, 255, 255));
-	currentMonitorDpi = GetDpiForWindow(hWnd);
+	dpi = GetDpiForWindow(hWnd);
 	Gdiplus::REAL emSize = 9.0;
 	FontFamily      fontFamily(L"Segoe UI Variable Small");
 	Gdiplus::Font   font(&fontFamily, emSize);
 	
-	graphics.DrawString(MsWin, -1, &font, FixedPointF(PointF(45, 100)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-	graphics.DrawString(Version.c_str(), -1, &font, FixedPointF(PointF(45, 118)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-	graphics.DrawString(CopyRight, -1, &font, FixedRectF(RectF(45, 136, 385, 40)), NULL, DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-	graphics.DrawString(AboutWin, -1, &font, FixedRectF(RectF(45, CopyY, CopyWidth, 80)), NULL, DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-	graphics.DrawString(Owner, -1, &font, FixedPointF(PointF(60, OwnerY)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
-	graphics.DrawString(Organization, -1, &font, FixedPointF(PointF(60, OrganizationY)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	graphics.DrawString(MsWin, -1, &font, ScaledPointF(PointF(45, 100), dpi), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	graphics.DrawString(Version.c_str(), -1, &font, ScaledPointF(PointF(45, 118), dpi), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	graphics.DrawString(CopyRight, -1, &font, ScaledRectF(RectF(45, 136, 385, 40), dpi), NULL, DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	graphics.DrawString(AboutWin, -1, &font, ScaledRectF(RectF(45, CopyY, CopyWidth, 80), dpi), NULL, DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	graphics.DrawString(Owner, -1, &font, ScaledPointF(PointF(60, OwnerY), dpi), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	graphics.DrawString(Organization, -1, &font, ScaledPointF(PointF(60, OrganizationY), dpi), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
 
 	//clean up
 	DeleteObject(&font);
@@ -315,12 +297,12 @@ BOOLEAN DrawAbout(HWND hWnd, Graphics& graphics)
 {
 	Gdiplus::SolidBrush      lightmodetext(Gdiplus::Color(255, 0, 0, 0));
 	Gdiplus::SolidBrush      darkmodetext(Gdiplus::Color(255, 255, 255, 255));
-	currentMonitorDpi = GetDpiForWindow(hWnd);
+	dpi = GetDpiForWindow(hWnd);
 	Gdiplus::REAL emSize = 10.0;
 	FontFamily      fontFamily(L"Segoe UI Variable Small");
 	Gdiplus::Font   font(&fontFamily, emSize);
 
-	graphics.DrawString(L"Hi, this page is a placeholder for now :)", -1, &font, FixedPointF(PointF(60, 150)), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	graphics.DrawString(L"Hi, this page is a placeholder for now :)", -1, &font, ScaledPointF(PointF(60, 150), dpi), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
 
 	//clean up
 	DeleteObject(&font);
@@ -335,13 +317,12 @@ BOOLEAN DrawLogo(HWND hwnd, Graphics& graphics, HINSTANCE hInst)
 {
 	Gdiplus::Bitmap* pBmp = LoadImageFromResource(hInst, MAKEINTRESOURCE(IDB_R11), L"PNG");
 	RectF        imgrectF(BitmapX, 15, 350, 67);
-	graphics.DrawImage(pBmp, FixedRectF(imgrectF));
+	graphics.DrawImage(pBmp, ScaledRectF(imgrectF, dpi));
 
 	DeleteObject(&imgrectF);
 	DeleteObject(&pBmp);
 	return TRUE;
 }
-
 
 BOOLEAN CreateHwnds(HWND hWnd, HINSTANCE hInst)
 {
@@ -352,8 +333,6 @@ BOOLEAN CreateHwnds(HWND hWnd, HINSTANCE hInst)
 	CString eulatxt(MAKEINTRESOURCE(IDS_TEXT_EULA));
 	yes = CreateWindowEx(WS_EX_COMPOSITED, WC_LINK, eulatxt, WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 0, 0, hWnd, (HMENU)200, hInst, NULL);
 	FixFont(hWnd, yes);
-	SendMessage(hWnd, DM_SETDEFID, (WPARAM)button, 0);
-	SetFocus(button);
 	UpdateWindow(hWnd);
 	return TRUE;
 }
@@ -398,7 +377,7 @@ void SetupRichEdit(HWND hwndEdit, HWND hDlg, HINSTANCE hInst)
 		hDlg, (HMENU)230, hInst, NULL);
 	UpdateLayoutForDpi(hwndEdit, 10, 15, 580, 280);
 	SendMessage(hwndEdit, EM_SETREADONLY, TRUE, 0);
-	FillRichEditFromFile(hwndEdit, L"C:\\windows\\system32\\license.rtf");
+	FillRichEditFromFile(hwndEdit, L"C:\\Windows\\System32\\license.rtf");
 	if (DarkThemeEnabled)
 	{
 		SendMessage(hwndEdit, EM_SETBKGNDCOLOR, 0, darkBkColor);
@@ -427,12 +406,12 @@ BOOL GetwinBrandName()
 			MsWin = getwinName(msw);
 			BRet = TRUE;
 		}
-		::FreeLibrary(hModNtdll);
+		FreeLibrary(hModNtdll);
 		hModNtdll = NULL;
 	}
 	else
 	{
-		MessageBox(0, L"Bruh can't find winbrand.dll", L"Error", MB_ICONERROR);
+		MessageBox(0, L"winbrand.dll not found.", L"Error", MB_ICONERROR);
 	}
 	return BRet;
 }
@@ -506,7 +485,6 @@ void FixDarkScrollBar()
 					}
 					return OpenNcThemeData(hWnd, classList);
 				};
-
 				addr->u1.Function = reinterpret_cast<ULONG_PTR>(static_cast<fnOpenNcThemeData>(MyOpenThemeData));
 				VirtualProtect(addr, sizeof(IMAGE_THUNK_DATA), oldProtect, &oldProtect);
 			}
