@@ -49,6 +49,7 @@ int EulaWidth;
 int BitmapX;
 
 BOOL Eaow = FALSE;
+BOOL dpiChanged = FALSE;
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -299,10 +300,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_DPICHANGED:
 		{
+			dpiChanged = TRUE;
 			UpdateWindowSize(hWnd, lParam);
 			UpdateLayoutForDpi(button, ButtonX, ButtonY, 70, 23);
 			UpdateLayoutForDpi(yes, 47, EulaY, EulaWidth, 40);
 			FixFont(hWnd, yes);
+			InvalidateRect(hWnd, NULL, FALSE);
+			UpdateWindow(hWnd);
 			break;
 		}
 		case WM_COMMAND:
@@ -317,7 +321,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				SendMessage(hWnd, WM_DESTROY, 0, 0);
 			}
-			else if ((LOWORD(wParam) == ID_R) && !Eaow)
+			else if ((LOWORD(wParam) == ID_E) && !Eaow)
 			{
 				Eaow = TRUE;
 				InvalidateRect(hWnd, NULL, FALSE);
@@ -353,12 +357,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			if (DarkThemeEnabled)
 			{
-				HDC hdc = reinterpret_cast<HDC>(wParam);
-				SetTextColor(hdc, darkTextColor);
-				SetBkColor(hdc, darkBkColor);
-				if (!hbrBkgnd)
-					hbrBkgnd = CreateSolidBrush(darkBkColor);
-				return reinterpret_cast<INT_PTR>(hbrBkgnd);
+				DarkModeHandler(wParam);
+				return reinterpret_cast<INT_PTR>(CreateSolidBrush(darkBkColor));
 			}
 		}
 		case WM_ERASEBKGND:
@@ -375,6 +375,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			
 			// draw logo and strings
 			Gdiplus::Graphics graphics(hdc);
+
 			if (!Eaow)
 				DrawStrings(hWnd, graphics);
 			else
@@ -426,11 +427,7 @@ INT_PTR CALLBACK EulaProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			if (DarkThemeEnabled)
 			{
-				HDC hdc = reinterpret_cast<HDC>(wParam);
-				SetTextColor(hdc, darkTextColor);
-				SetBkColor(hdc, darkBkColor);
-				if (!hbrBkgnd)
-					hbrBkgnd = CreateSolidBrush(darkBkColor);
+				DarkModeHandler(wParam);
 				return reinterpret_cast<INT_PTR>(hbrBkgnd);
 			}
 			break;

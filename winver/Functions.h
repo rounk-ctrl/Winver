@@ -30,3 +30,4 @@ BOOL GetwinBrandName();
 BOOL CustomDrawButton(LPARAM lParam, HWND hWnd);
 void FixDarkScrollBar();
 BOOLEAN DrawAbout(HWND hWnd, Gdiplus::Graphics& graphics);
+void DarkModeHandler(WPARAM wParam);

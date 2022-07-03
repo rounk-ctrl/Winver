@@ -273,7 +273,11 @@ BOOLEAN DrawStrings(HWND hWnd, Graphics& graphics)
 	Gdiplus::SolidBrush      lightmodetext(Gdiplus::Color(255, 0, 0, 0));
 	Gdiplus::SolidBrush      darkmodetext(Gdiplus::Color(255, 255, 255, 255));
 	dpi = GetDpiForWindow(hWnd);
-	Gdiplus::REAL emSize = 9.0;
+	Gdiplus::REAL emSize;
+	if (dpiChanged)
+		emSize = (9.0 * dpi / 96);
+	else
+		emSize = 9.0;
 	FontFamily      fontFamily(L"Segoe UI Variable Small");
 	Gdiplus::Font   font(&fontFamily, emSize);
 	
@@ -298,11 +302,18 @@ BOOLEAN DrawAbout(HWND hWnd, Graphics& graphics)
 	Gdiplus::SolidBrush      lightmodetext(Gdiplus::Color(255, 0, 0, 0));
 	Gdiplus::SolidBrush      darkmodetext(Gdiplus::Color(255, 255, 255, 255));
 	dpi = GetDpiForWindow(hWnd);
-	Gdiplus::REAL emSize = 10.0;
+	Gdiplus::REAL emSize;
+	if (dpiChanged)
+		emSize = (100.0 * dpi / 96);
+	else
+		emSize = 100.0;
+
 	FontFamily      fontFamily(L"Segoe UI Variable Small");
 	Gdiplus::Font   font(&fontFamily, emSize);
 
-	graphics.DrawString(L"Hi, this page is a placeholder for now :)", -1, &font, ScaledPointF(PointF(60, 150), dpi), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	graphics.DrawString(L"E", -1, &font, ScaledPointF(PointF(170, 100), dpi), DarkThemeEnabled ? &darkmodetext : &lightmodetext);
+	SetWindowText(hWnd, L"About Edo");
+	OkButton = L"E";
 
 	//clean up
 	DeleteObject(&font);
@@ -490,4 +501,11 @@ void FixDarkScrollBar()
 			}
 		}
 	}
+}
+
+void DarkModeHandler(WPARAM wParam)
+{
+	HDC hdc = reinterpret_cast<HDC>(wParam);
+	SetTextColor(hdc, darkTextColor);
+	SetBkColor(hdc, darkBkColor);
 }

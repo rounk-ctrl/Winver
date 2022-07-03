@@ -22,8 +22,7 @@
 #define IDC_RICHEDIT21                  1000
 #define ID_RETURN                       32772
 #define ID_ESC                          32774
-#define ID_M                            32776
-#define ID_R                            32776
+#define ID_E                            32776
 #define IDC_STATIC                      -1
 #define IDC_EULA_BOX                    -1
 

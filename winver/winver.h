@@ -24,6 +24,7 @@ extern int OwnerY;
 extern int OrganizationY;
 extern int BitmapX;
 extern int CopyY;
+extern BOOL dpiChanged;
 
 enum IMMERSIVE_HC_CACHE_MODE
 {
