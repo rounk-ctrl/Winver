@@ -9,6 +9,7 @@ BOOLEAN FixFont(HWND hWnd, HWND yes)
 	SendMessage(yes, WM_SETFONT, (LPARAM)hFont, true);
 	return TRUE;
 }
+
 void UpdateWindowSize(HWND hWnd, LPARAM lParam)
 {
 	auto rect = *reinterpret_cast<RECT *>(lParam);
@@ -20,6 +21,7 @@ void UpdateWindowSize(HWND hWnd, LPARAM lParam)
 		rect.bottom - rect.top,
 		SWP_NOACTIVATE | SWP_NOZORDER);
 }
+
 void ScaleDialog(HWND hDlg)
 {
 	UINT dpi = GetDpiForWindow(hDlg);

@@ -297,7 +297,7 @@ BOOLEAN DrawStrings(HWND hWnd, Graphics& graphics)
 	return TRUE;
 }
 
-BOOLEAN DrawAbout(HWND hWnd, Graphics& graphics)
+BOOLEAN DrawE(HWND hWnd, Graphics& graphics)
 {
 	Gdiplus::SolidBrush      lightmodetext(Gdiplus::Color(255, 0, 0, 0));
 	Gdiplus::SolidBrush      darkmodetext(Gdiplus::Color(255, 255, 255, 255));

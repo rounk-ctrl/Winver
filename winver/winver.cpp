@@ -379,7 +379,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			if (!Eaow)
 				DrawStrings(hWnd, graphics);
 			else
-				DrawAbout(hWnd, graphics);
+				DrawE(hWnd, graphics);
 
 			DrawLogo(hWnd, graphics, hInst);
 
@@ -412,6 +412,9 @@ INT_PTR CALLBACK EulaProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			UpdateLayoutForDpi(hwndEdit, 10, 15, 580, 280);
 			UpdateLayoutForDpi(GetDlgItem(hDlg, IDOK), 525, 320, 70, 23);
 			SetWindowTheme(GetDlgItem(hDlg, IDOK), L"Explorer", nullptr);
+			CString title(MAKEINTRESOURCE(IDG_TITLE));
+			SetWindowText(hDlg, title);
+			SetWindowText(GetDlgItem(hDlg, IDOK), OkButton);
 			DarkTitleBar(hDlg);
 			if (DarkThemeEnabled)
 			{
