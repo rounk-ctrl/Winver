@@ -330,6 +330,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			break;
 		}
+		case WM_SETTINGCHANGE:
+		{
+			if (DarkThemeEnabled != IsExplorerDarkTheme())
+			{
+				DarkThemeEnabled = IsExplorerDarkTheme();
+				DarkTitleBar(hWnd);
+				if (DarkThemeEnabled)
+					ApplyMica(hWnd);
+				InvalidateRect(hWnd, NULL, FALSE);
+				UpdateWindow(hWnd);
+			}
+		}
 		case WM_NOTIFY:
 		{
 			switch (((LPNMHDR)lParam)->code)
