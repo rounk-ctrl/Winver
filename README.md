@@ -16,3 +16,4 @@ win32 real
  - Chinese simplified
  - Italian
  - Russian
+ - Spanish
