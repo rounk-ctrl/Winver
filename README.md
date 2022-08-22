@@ -17,3 +17,4 @@ win32 real
  - Italian
  - Russian
  - Spanish
+ - Croatian
